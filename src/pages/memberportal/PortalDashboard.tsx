@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from "react";
-import {
-  Award,
-  UserCircle,
-  LogOut,
-} from "lucide-react";
+import { Award, UserCircle } from "lucide-react";
 import { supabase } from "../../../supabaseClient";
 import { useNavigate } from "react-router-dom";
 
 const menuItems = [
-  { icon: UserCircle, label: "Account Management", href: "memberportal/account-management" },
+  { icon: UserCircle, label: "Account Management", href: "/memberportal/account-management" },
   { icon: Award, label: "Certifications", href: "/portal/certifications" },
 ];
 
@@ -65,15 +61,6 @@ const Dashboard = () => {
     fetchProjects();
   }, [navigate]);
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error logging out:", error);
-    } else {
-      navigate("/");
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -83,13 +70,6 @@ const Dashboard = () => {
               Welcome back, {user ? user.user_metadata.full_name : "User"}!
             </h2>
           </div>
-          <button
-          onClick={handleLogout}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-300"
-        >
-          <LogOut className="mr-2 h-5 w-5 text-red-600" /> Log Out
-        </button>
-
         </div>
 
         <div className="mt-8 grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -126,7 +106,7 @@ const Dashboard = () => {
           >
             <div className="p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-              My Articles & Publications - Write and Publish
+                My Articles & Publications - Write and Publish
               </h3>
               <div className="space-y-4">
                 {projects.length > 0 ? (

@@ -19,6 +19,10 @@ import { Approach } from "./pages/approach";
 import { OurOrganization } from "./pages/OurOrganization";
 import { JoinMission } from "./pages/JoinMission";
 import { SupportOurCause } from "./pages/SupportOurCause";
+import { Leadership } from "./pages/Leadership";
+import AccountManagement from "./pages/memberportal/AccountManagement";
+import PaymentProcessing from "./pages/memberportal/PaymentProcessing";
+
 
 const App = () => {
   return (
@@ -40,9 +44,12 @@ const App = () => {
         <Route path="/membership/member-portal" element={<Login />} />
         <Route path="/memberportal/portaldashboard" element={<Dashboard />} />
         <Route path="/memberportal/mypublication" element={<MyPublication />} />
+        <Route path="/about-us/leadership" element={<Leadership />} />
         <Route path="/about-us/our-organization" element={<OurOrganization />} />
         <Route path="/about-us/join-our-mission" element={<JoinMission />} />
         <Route path="/about-us/support-our-cause" element={<SupportOurCause />} />
+        <Route path="/memberportal/account-management" element={<AccountManagement />} />
+        <Route path="/memberportal/payment-processing" element={<PaymentProcessing />} />
       </Routes> 
       <Footer />
     </Router>
