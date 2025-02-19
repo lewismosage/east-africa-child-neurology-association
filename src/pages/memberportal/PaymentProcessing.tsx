@@ -6,6 +6,7 @@ const PaymentProcessing = () => {
   const [transactionId, setTransactionId] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -13,11 +14,11 @@ const PaymentProcessing = () => {
     setLoading(true);
 
     // Prevent duplicate submissions
-    if (status === "Membership Under Review / Verification") {
+    if (status === "PAYMENT UNDER VERIFICATION") {
       return;
     }
 
-    // Store payment details in the app state or send them to an Admin page for verification
+    // Store payment details in the new table
     const { data, error } = await supabase.from("payments").insert([
       {
         transaction_id: transactionId,
@@ -26,12 +27,14 @@ const PaymentProcessing = () => {
     ]);
 
     if (error) {
+      console.error("Error submitting payment details:", error);
       setStatus("Error submitting payment details. Please try again.");
       setLoading(false);
       return;
     }
 
-    setStatus("Membership Under Review / Verification");
+    setStatus("PAYMENT UNDER VERIFICATION");
+    setSubmitted(true);
     setLoading(false);
   };
 
@@ -48,10 +51,16 @@ const PaymentProcessing = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {status && <p className="text-center text-red-600 mb-4">{status}</p>}
+          {status && (
+            <p className={`text-center mb-4 ${status === "PAYMENT UNDER VERIFICATION" ? "text-green-600" : "text-red-600"}`}>
+              {status}
+            </p>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              
+              <p className="text-sm font-medium text-gray-700 text-center">
+                ACCOUNT DETAILS
+              </p>
               <label
                 htmlFor="paybill"
                 className="block text-sm font-medium text-gray-700"
@@ -61,7 +70,7 @@ const PaymentProcessing = () => {
               <textarea
                 id="paybill"
                 name="paybill"
-                value={"PAYBILL-12345\nACCOUNT NUMBER- 12345"}
+                value={"PAYBILL-12345\nACCOUNT NUMBER 12345"}
                 readOnly
                 rows={2}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -89,10 +98,12 @@ const PaymentProcessing = () => {
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                  submitted ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"
+                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
                 disabled={loading}
               >
-                {loading ? "Submitting..." : "Submit Payment"}
+                {loading ? "Submitting..." : submitted ? "Submitted" : "Submit Payment"}
               </button>
             </div>
           </form>
