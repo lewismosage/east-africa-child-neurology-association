@@ -4,16 +4,9 @@ import { supabase } from "../../../supabaseClient";
 
 const PaymentProcessing = () => {
   const [transactionId, setTransactionId] = useState("");
-  const [proofOfPayment, setProofOfPayment] = useState<File | null>(null);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setProofOfPayment(e.target.files[0]);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +21,6 @@ const PaymentProcessing = () => {
     const { data, error } = await supabase.from("payments").insert([
       {
         transaction_id: transactionId,
-        proof_of_payment: proofOfPayment ? proofOfPayment.name : null,
         status: "pending",
       },
     ]);
@@ -59,18 +51,19 @@ const PaymentProcessing = () => {
           {status && <p className="text-center text-red-600 mb-4">{status}</p>}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
+              
               <label
                 htmlFor="paybill"
                 className="block text-sm font-medium text-gray-700"
               >
-                M-Pesa Paybill or Till Number
+                M-Pesa Paybill
               </label>
-              <input
+              <textarea
                 id="paybill"
                 name="paybill"
-                type="text"
-                value="123456" // Example Paybill or Till Number
+                value={"PAYBILL-12345\nACCOUNT NUMBER- 12345"}
                 readOnly
+                rows={2}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
@@ -90,22 +83,6 @@ const PaymentProcessing = () => {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 value={transactionId}
                 onChange={(e) => setTransactionId(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="proofOfPayment"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Proof of Payment (Optional)
-              </label>
-              <input
-                id="proofOfPayment"
-                name="proofOfPayment"
-                type="file"
-                className="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer focus:outline-none focus:border-blue-500 focus:ring-blue-500"
-                onChange={handleFileChange}
               />
             </div>
 
