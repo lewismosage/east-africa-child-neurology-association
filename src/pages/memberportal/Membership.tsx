@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Shield, Award, Users, BookOpen, Heart, Star } from "lucide-react";
-import { Register } from "../memberportal/Register"; 
+import { useNavigate } from "react-router-dom";
 
 export function Membership() {
-  const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0); // Ensures the page opens at the top
@@ -83,9 +83,9 @@ export function Membership() {
     },
   ];
 
-  if (showRegisterForm) {
-    return <Register />;
-  }
+  const handleApplyNow = () => {
+    navigate("/memberportal/register-form");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -168,7 +168,7 @@ export function Membership() {
                 </ul>
                 <button
                   className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors"
-                  onClick={() => setShowRegisterForm(true)}
+                  onClick={handleApplyNow}
                 >
                   Apply Now
                 </button>

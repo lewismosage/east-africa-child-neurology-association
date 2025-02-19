@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom"; 
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Footer from "./components/Footer";
@@ -12,7 +12,7 @@ import { Contact } from "./pages/Contact";
 import FindSpecialist from "./pages/FindSpecialist";
 import { Login } from "./pages/memberportal/Login";
 import { Membership } from "./pages/memberportal/Membership";
-import { Register } from "./pages/memberportal/Register";
+import RegisterForm from "./pages/memberportal/RegisterForm";
 import Dashboard from "./pages/memberportal/PortalDashboard";
 import MyPublication from "./pages/memberportal/MyPublication";
 import { Approach } from "./pages/approach";
@@ -22,7 +22,12 @@ import { SupportOurCause } from "./pages/SupportOurCause";
 import { Leadership } from "./pages/Leadership";
 import AccountManagement from "./pages/memberportal/AccountManagement";
 import PaymentProcessing from "./pages/memberportal/PaymentProcessing";
-
+import { AdminLayout } from './pages/admin/AdminLayout';
+import { ManageResources } from './pages/admin/ManageResources';
+import { ManageEvents } from './pages/admin/ManageEvents';
+import { RequireAuth } from './components/admin/RequireAuth';
+import { AdminLogin } from './pages/admin/AdminLogin';
+import PaymentVerification from "./pages/admin/PaymentVerification";
 
 const App = () => {
   return (
@@ -40,7 +45,7 @@ const App = () => {
         <Route path="/approach" element={<Approach />} />
         <Route path="/membership/login" element={<Login />} />
         <Route path="/membership/become-a-member" element={<Membership />} />
-        <Route path="/membership/register" element={<Register />} />
+        <Route path="/memberportal/register-form" element={<RegisterForm />} />
         <Route path="/membership/member-portal" element={<Login />} />
         <Route path="/memberportal/portaldashboard" element={<Dashboard />} />
         <Route path="/memberportal/mypublication" element={<MyPublication />} />
@@ -50,6 +55,26 @@ const App = () => {
         <Route path="/about-us/support-our-cause" element={<SupportOurCause />} />
         <Route path="/memberportal/account-management" element={<AccountManagement />} />
         <Route path="/memberportal/payment-processing" element={<PaymentProcessing />} />
+
+         {/* Admin Login Page */}
+         <Route path="/admin/login" element={<AdminLogin />} />
+
+        {/* Redirect "/admin" to "/admin/login" if not authenticated */}
+        <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+
+        {/* Protected Admin Routes */}
+        <Route
+          path="/admin/*"
+          element={
+            <RequireAuth>
+              <AdminLayout />
+            </RequireAuth>
+          }
+        >
+          <Route path="resources" element={<ManageResources />} />
+          <Route path="events" element={<ManageEvents />} />
+          <Route path="payment-verification" element={<PaymentVerification />} />
+          </Route>
       </Routes> 
       <Footer />
     </Router>
