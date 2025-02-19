@@ -3,8 +3,9 @@ import { supabase } from "../../../supabaseClient";
 
 interface Payment {
   id: number;
+  full_name: string;
+  phone_number: string;
   transaction_id: string;
-  proof_of_payment: string | null;
   status: string;
 }
 
@@ -19,7 +20,7 @@ const PaymentVerification = () => {
         const { data, error } = await supabase
           .from("payments")
           .select("*")
-          .eq("status", "pending");
+          .order("id", { ascending: false }); // Fetch data in descending order
 
         if (error) {
           throw error;
@@ -34,13 +35,32 @@ const PaymentVerification = () => {
     };
 
     fetchPayments();
+
+    const paymentSubscription = supabase
+      .channel('public:payments')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setPayments((prevPayments) => [payload.new, ...prevPayments]);
+        } else if (payload.eventType === 'UPDATE') {
+          setPayments((prevPayments) =>
+            prevPayments.map((payment) =>
+              payment.id === payload.new.id ? payload.new : payment
+            )
+          );
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(paymentSubscription);
+    };
   }, []);
 
   const handleVerifyPayment = async (paymentId: number) => {
     try {
       const { error } = await supabase
         .from("payments")
-        .update({ status: "verified" })
+        .update({ status: "approved" })
         .eq("id", paymentId);
 
       if (error) {
@@ -49,7 +69,7 @@ const PaymentVerification = () => {
 
       setPayments((prevPayments) =>
         prevPayments.map((payment) =>
-          payment.id === paymentId ? { ...payment, status: "verified" } : payment
+          payment.id === paymentId ? { ...payment, status: "approved" } : payment
         )
       );
     } catch (error) {
@@ -78,10 +98,13 @@ const PaymentVerification = () => {
                 <thead>
                   <tr>
                     <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Transaction ID
+                      Full Name
                     </th>
                     <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Proof of Payment
+                      Phone Number
+                    </th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Transaction ID
                     </th>
                     <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
@@ -95,26 +118,16 @@ const PaymentVerification = () => {
                   {payments.map((payment) => (
                     <tr key={payment.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {payment.full_name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {payment.phone_number}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {payment.transaction_id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {payment.proof_of_payment ? (
-                          <a
-                            href={`${supabase.storage
-                              .from("proof_of_payments")
-                              .getPublicUrl(payment.proof_of_payment).data.publicUrl}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            View Proof
-                          </a>
-                        ) : (
-                          "No Proof"
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {payment.status}
+                        {payment.status === "approved" ? "Approved" : "Pending Approval"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         {payment.status === "pending" && (
