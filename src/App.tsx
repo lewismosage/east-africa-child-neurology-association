@@ -12,7 +12,7 @@ import { Contact } from "./pages/Contact";
 import FindSpecialist from "./pages/FindSpecialist";
 import { Login } from "./pages/memberportal/Login";
 import { Membership } from "./pages/memberportal/Membership";
-import RegisterForm from "./pages/memberportal/RegisterForm";
+import { RegisterForm } from "./pages/memberportal/RegisterForm";
 import Dashboard from "./pages/memberportal/PortalDashboard";
 import MyPublication from "./pages/memberportal/MyPublication";
 import { Approach } from "./pages/approach";
@@ -43,6 +43,7 @@ const App = () => {
         <Route path="/publication/articles-&-research" element={<ArticlesAndResearch />} /> 
         <Route path="/find-specialist" element={<FindSpecialist />} />
         <Route path="/approach" element={<Approach />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/membership/login" element={<Login />} />
         <Route path="/membership/become-a-member" element={<Membership />} />
         <Route path="/memberportal/register-form" element={<RegisterForm />} />
