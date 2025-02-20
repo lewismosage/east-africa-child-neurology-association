@@ -12,7 +12,7 @@ export function RegisterForm() {
     profession: "",
     password: "",
     confirmPassword: "",
-    membershipType: "Associate",
+   // membershipType: "Associate",
   });
   const [status, setStatus] = useState<React.ReactNode>("");
   const [loading, setLoading] = useState(false);
@@ -97,7 +97,7 @@ export function RegisterForm() {
         full_name: formData.fullName,
         phone: formData.phone,
         profession: formData.profession,
-        membership_type: formData.membershipType,
+      //  membership_type: formData.membershipType,
         status: "pending",
       },
     ]);
@@ -125,7 +125,7 @@ export function RegisterForm() {
       profession: "",
       password: "",
       confirmPassword: "",
-      membershipType: "Associate",
+    //  membershipType: "Associate",
     });
 
     setTimeout(() => {
@@ -276,26 +276,7 @@ export function RegisterForm() {
               </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="membershipType"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Membership Type
-              </label>
-              <select
-                id="membershipType"
-                name="membershipType"
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                value={formData.membershipType}
-                onChange={handleChange}
-              >
-                <option value="Associate">Associate Member</option>
-                <option value="Full">Full Member</option>
-                <option value="Fellow">Fellow Member</option>
-              </select>
-            </div>
+            
 
             <div>
               <button
