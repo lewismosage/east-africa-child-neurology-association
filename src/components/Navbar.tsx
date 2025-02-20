@@ -41,7 +41,7 @@ const Navbar = () => {
       "Renewal & Upgrade",
     ],
     Publication: ["Resources", "Articles & Research"],
-    "Media Center": ["News", "Newsletters", "FAQs"],
+    "Media Center": ["News And Newsletters", "FAQs"],
   };
 
   const allPages = Object.entries(navigation).flatMap(([category, items]) =>
