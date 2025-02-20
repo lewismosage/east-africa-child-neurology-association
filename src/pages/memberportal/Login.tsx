@@ -28,18 +28,69 @@ export function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    // Step 1: Sign in the user
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: formData.email,
       password: formData.password,
     });
 
-    if (error) {
+    if (authError) {
       setStatus("Login failed. Please check your email and password.");
       return;
     }
 
-    setStatus("Login successful!");
-    navigate("/memberportal/portaldashboard");
+    const userId = authData.user?.id;
+
+    if (!userId) {
+      setStatus("Login failed. User ID not found.");
+      return;
+    }
+
+    // Step 2: Fetch payment and profile data
+    try {
+      // Fetch payment data
+      const { data: paymentData, error: paymentError } = await supabase
+        .from("payments")
+        .select("status")
+        .eq("user_id", userId) // Assuming `user_id` is the foreign key in the `payments` table
+        .order("created_at", { ascending: false }) // Get the latest payment
+        .limit(1);
+
+      if (paymentError) {
+        throw paymentError;
+      }
+
+      // Fetch profile data
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("membership_status")
+        .eq("id", userId)
+        .single();
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      // Step 3: Check conditions
+      if (paymentData.length === 0 || paymentData[0].status !== "approved") {
+        // No payment or payment not approved
+        navigate("/memberportal/payment-processing");
+        return;
+      }
+
+      if (profileData.membership_status !== "active") {
+        // Profile is not active
+        setStatus("Your account is awaiting activation. Please contact support.");
+        return;
+      }
+
+      // Step 4: Allow access to the members portal
+      setStatus("Login successful!");
+      navigate("/memberportal/portaldashboard");
+    } catch (error) {
+      console.error("Error fetching payment or profile data:", error);
+      setStatus("An error occurred. Please try again.");
+    }
   };
 
   return (

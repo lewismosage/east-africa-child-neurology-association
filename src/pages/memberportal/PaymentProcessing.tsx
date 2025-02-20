@@ -2,33 +2,59 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../supabaseClient";
 
-
 const PaymentProcessing = () => {
-  const [fullName, setFullName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [transactionId, setTransactionId] = useState("");
-  const [status, setStatus] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [fullName, setFullName] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [transactionId, setTransactionId] = useState<string>("");
+  const [status, setStatus] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [submitted, setSubmitted] = useState<boolean>(false);
   const navigate = useNavigate();
-  const [membershipTier, setMembershipTier] = useState(""); // "Student", "Associate", "Full Member"
+  const [membershipTier, setMembershipTier] = useState<string>(""); // "Student", "Associate", "Full Member"
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Function to check if the Transaction ID already exists in the database
+  const checkTransactionIdExists = async (transactionId: string): Promise<boolean> => {
+    const { data, error } = await supabase
+      .from("payments")
+      .select("transaction_id")
+      .eq("transaction_id", transactionId);
+
+    if (error) {
+      console.error("Error checking transaction ID:", error);
+      return false;
+    }
+
+    return data.length > 0; // Returns true if the transaction ID exists
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
-  
+
     // Prevent duplicate submissions
     if (status === "PAYMENT UNDER VERIFICATION") {
+      setLoading(false);
       return;
     }
-  
+
     // Validate that membershipTier is selected
     if (!membershipTier) {
       setStatus("Please select a membership tier.");
       setLoading(false);
       return;
     }
-  
+
+    // Check if Transaction ID already exists
+    const transactionIdExists = await checkTransactionIdExists(transactionId);
+    if (transactionIdExists) {
+      setStatus(
+        "Transaction ID Already Submitted. The Transaction ID you entered has already been submitted and is currently under review. If this was a mistake, please check your details and try again. If you need assistance, please contact support."
+      );
+      setLoading(false);
+      return;
+    }
+
     // Store payment details in Supabase
     const { data, error } = await supabase.from("payments").insert([
       {
@@ -39,20 +65,18 @@ const PaymentProcessing = () => {
         membership_tier: membershipTier, // Include membership tier
       },
     ]);
-  
+
     if (error) {
       console.error("Error submitting payment details:", error);
       setStatus("Error submitting payment details. Please try again.");
       setLoading(false);
       return;
     }
-  
+
     setStatus("PAYMENT UNDER VERIFICATION");
     setSubmitted(true);
     setLoading(false);
   };
-  
-
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

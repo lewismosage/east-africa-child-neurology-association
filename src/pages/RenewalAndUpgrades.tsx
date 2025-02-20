@@ -3,22 +3,44 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 
 const PaymentProcessing = () => {
-  const [fullName, setFullName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [transactionId, setTransactionId] = useState("");
-  const [status, setStatus] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [actionType, setActionType] = useState("renew"); // "renew" or "upgrade"
-  const [membershipTier, setMembershipTier] = useState(""); // "Student", "Associate", "Full Member"
+  const [fullName, setFullName] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [transactionId, setTransactionId] = useState<string>("");
+  const [status, setStatus] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [actionType, setActionType] = useState<"renew" | "upgrade">("renew"); // "renew" or "upgrade"
+  const [membershipTier, setMembershipTier] = useState<string>(""); // "Student", "Associate", "Full Member"
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
 
     // Prevent duplicate submissions
     if (status === "PAYMENT UNDER VERIFICATION") {
+      setLoading(false);
+      return;
+    }
+
+    // Check if Transaction ID already exists
+    const { data: existingTransactions, error: fetchError } = await supabase
+      .from("payments")
+      .select("transaction_id")
+      .eq("transaction_id", transactionId);
+
+    if (fetchError) {
+      console.error("Error checking transaction ID:", fetchError);
+      setStatus("Error checking transaction ID. Please try again.");
+      setLoading(false);
+      return;
+    }
+
+    if (existingTransactions && existingTransactions.length > 0) {
+      setStatus(
+        "Transaction ID Already Submitted. The Transaction ID you entered has already been submitted and is currently under review. If this was a mistake, please check your details and try again. If you need assistance, please contact support."
+      );
+      setLoading(false);
       return;
     }
 
@@ -49,7 +71,7 @@ const PaymentProcessing = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-      <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
+        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
           Renewal & Upgrades
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
@@ -116,7 +138,6 @@ const PaymentProcessing = () => {
                 <option value="Full Member">Full Member</option>
               </select>
             </div>
-
 
             {/* M-Pesa Paybill Details */}
             <div>
