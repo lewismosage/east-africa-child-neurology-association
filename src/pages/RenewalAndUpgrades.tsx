@@ -99,25 +99,24 @@ const PaymentProcessing = () => {
               </div>
             </div>
 
-            {/* Membership Tier Selection (Only for Upgrades) */}
-            {actionType === "upgrade" && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Select Membership Tier
-                </label>
-                <select
-                  value={membershipTier}
-                  onChange={(e) => setMembershipTier(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Select a tier</option>
-                  <option value="Student">Student</option>
-                  <option value="Associate">Associate</option>
-                  <option value="Full Member">Full Member</option>
-                </select>
-              </div>
-            )}
+            {/* Membership Tier Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Select Membership Tier
+              </label>
+              <select
+                value={membershipTier}
+                onChange={(e) => setMembershipTier(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                required
+              >
+                <option value="">Select a tier</option>
+                <option value="Student">Student</option>
+                <option value="Associate">Associate</option>
+                <option value="Full Member">Full Member</option>
+              </select>
+            </div>
+
 
             {/* M-Pesa Paybill Details */}
             <div>

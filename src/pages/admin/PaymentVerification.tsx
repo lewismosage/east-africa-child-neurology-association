@@ -7,7 +7,7 @@ interface Payment {
   phone_number: string;
   transaction_id: string;
   status: string;
-  membership_tier: string;
+  membership_tier: string; // Added membership_tier to the interface
 }
 
 const PaymentVerification = () => {
@@ -27,7 +27,7 @@ const PaymentVerification = () => {
           throw error;
         }
 
-        setPayments(data);
+        setPayments(data as Payment[]); // Explicitly cast data to Payment[]
       } catch (error) {
         setError("Error fetching payments. Please try again.");
       } finally {
@@ -38,18 +38,26 @@ const PaymentVerification = () => {
     fetchPayments();
 
     const paymentSubscription = supabase
-      .channel('public:payments')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          setPayments((prevPayments) => [payload.new, ...prevPayments]);
-        } else if (payload.eventType === 'UPDATE') {
-          setPayments((prevPayments) =>
-            prevPayments.map((payment) =>
-              payment.id === payload.new.id ? payload.new : payment
-            )
-          );
+      .channel("public:payments")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "payments" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            // Ensure payload.new matches the Payment interface
+            const newPayment = payload.new as Payment;
+            setPayments((prevPayments) => [newPayment, ...prevPayments]);
+          } else if (payload.eventType === "UPDATE") {
+            // Ensure payload.new matches the Payment interface
+            const updatedPayment = payload.new as Payment;
+            setPayments((prevPayments) =>
+              prevPayments.map((payment) =>
+                payment.id === updatedPayment.id ? updatedPayment : payment
+              )
+            );
+          }
         }
-      })
+      )
       .subscribe();
 
     return () => {
@@ -108,6 +116,9 @@ const PaymentVerification = () => {
                       Transaction ID
                     </th>
                     <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Membership Tier
+                    </th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
                     <th className="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -126,6 +137,9 @@ const PaymentVerification = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {payment.transaction_id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {payment.membership_tier}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {payment.status === "approved" ? "Approved" : "Pending Approval"}
