@@ -28,6 +28,11 @@ import { ManageEvents } from './pages/admin/ManageEvents';
 import { RequireAuth } from './components/admin/RequireAuth';
 import { AdminLogin } from './pages/admin/AdminLogin';
 import PaymentVerification from "./pages/admin/PaymentVerification";
+import EACNAPolicies from './pages/EACNAPolicies';
+import RenewalAndUpgrades from './pages/RenewalAndUpgrades';
+import FAQs from './pages/FAQs';
+import News from './pages/News';
+import Newsletters from './pages/Newsletters';
 
 const App = () => {
   return (
@@ -56,6 +61,11 @@ const App = () => {
         <Route path="/about-us/support-our-cause" element={<SupportOurCause />} />
         <Route path="/memberportal/account-management" element={<AccountManagement />} />
         <Route path="/memberportal/payment-processing" element={<PaymentProcessing />} />
+        <Route path="/membership/eacna-policies" element={<EACNAPolicies />} />
+        <Route path="/membership/renewal-&-upgrade" element={<RenewalAndUpgrades />} />
+        <Route path="/media-center/faqs" element={<FAQs />} />
+        <Route path="/media-center/news" element={<News />} />
+        <Route path="/media-center/newsletters" element={<Newsletters />} />
 
          {/* Admin Login Page */}
          <Route path="/admin/login" element={<AdminLogin />} />

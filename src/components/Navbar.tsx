@@ -39,7 +39,6 @@ const Navbar = () => {
       "Become a Member",
       "EACNA Policies",
       "Renewal & Upgrade",
-      "FAQs",
     ],
     Publication: ["Resources", "Articles & Research"],
     "Media Center": ["News", "Newsletters", "FAQs"],
