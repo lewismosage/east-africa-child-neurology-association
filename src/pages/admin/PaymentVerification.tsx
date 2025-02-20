@@ -7,6 +7,7 @@ interface Payment {
   phone_number: string;
   transaction_id: string;
   status: string;
+  membership_tier: string;
 }
 
 const PaymentVerification = () => {
