@@ -19,6 +19,7 @@ export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [applied, setApplied] = useState(false);
+  const [emailSent, setEmailSent] = useState(false); // New state for email sent status
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -114,6 +115,7 @@ export function RegisterForm() {
 
     setStatus("Registration successful! Redirecting to payment...");
     setLoading(false);
+    setEmailSent(true); // Set emailSent to true after successful registration
     setApplied(true);
 
     setFormData({
@@ -303,10 +305,16 @@ export function RegisterForm() {
                 } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
                 disabled={loading}
               >
-                {loading ? "Processing..." : applied ? "Applied" : "Apply Now"}
+                {loading
+                  ? "Processing..."
+                  : applied
+                  ? "Applied"
+                  : emailSent
+                  ? "Email Verified! Tap to Continue."
+                  : "Apply Now"}
               </button>
               <p className="mt-2 text-center text-sm text-gray-600">
-                Check Your Email to Confirm Your Sign Up
+              Have you confirmed your email? Press 'Apply Now' again to continue!
               </p>
             </div>
           </form>

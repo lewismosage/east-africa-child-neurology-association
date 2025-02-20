@@ -29,9 +29,13 @@ import { RequireAuth } from './components/admin/RequireAuth';
 import { AdminLogin } from './pages/admin/AdminLogin';
 import PaymentVerification from "./pages/admin/PaymentVerification";
 import EACNAPolicies from './pages/EACNAPolicies';
-import RenewalAndUpgrades from './pages/RenewalAndUpgrades';
+import  RenewalAndUpgrades from './pages/RenewalAndUpgrades';
 import FAQs from './pages/FAQs';
 import NewsAndNewsletters from './pages/NewsAndNewsletters';
+import { NationalPolicies } from './pages/NationalPolicies';
+import  { InternationalGuidelines } from './pages/InternationalGuidelines';
+import { MedicalPracticeRegulations } from './pages/MedicalPracticeRegulations';
+import { LegislativeNews } from './pages/LegislativeNews';
 
 const App = () => {
   return (
@@ -64,6 +68,10 @@ const App = () => {
         <Route path="/membership/renewal-&-upgrade" element={<RenewalAndUpgrades />} />
         <Route path="/media-center/faqs" element={<FAQs />} />
         <Route path="media-center/news-and-newsletters" element={<NewsAndNewsletters />} />
+        <Route path="/national-policies" element={<NationalPolicies />} />
+        <Route path="/international-guidelines" element={<InternationalGuidelines />} />
+        <Route path="/medical-practice-regulations" element={<MedicalPracticeRegulations />} />
+        <Route path="/legislative-news" element={<LegislativeNews />} />
 
          {/* Admin Login Page */}
          <Route path="/admin/login" element={<AdminLogin />} />
