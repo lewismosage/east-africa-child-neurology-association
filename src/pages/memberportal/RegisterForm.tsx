@@ -1,10 +1,17 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "../../../supabaseClient";
 
 export function RegisterForm() {
+   useEffect(() => {
+      window.scrollTo(0, 0); // Ensures the page opens at the top
+    }, []);
+
   const navigate = useNavigate();
+  const location = useLocation();
+  const selectedTier = location.state?.selectedTier;
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -12,14 +19,14 @@ export function RegisterForm() {
     profession: "",
     password: "",
     confirmPassword: "",
-   // membershipType: "Associate",
+    membershipTier: selectedTier?.name || "", // Pre-fill the selected membership tier
   });
   const [status, setStatus] = useState<React.ReactNode>("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [applied, setApplied] = useState(false);
-  const [emailSent, setEmailSent] = useState(false); // New state for email sent status
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -42,6 +49,7 @@ export function RegisterForm() {
       return;
     }
 
+    // Step 1: Sign up the user
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
@@ -50,11 +58,7 @@ export function RegisterForm() {
 
     if (signUpError) {
       if (signUpError.status === 409) {
-        setStatus(
-          <>
-            You already have an account.
-          </>
-        );
+        setStatus("You already have an account.");
       } else {
         setStatus(signUpError.message);
       }
@@ -69,46 +73,23 @@ export function RegisterForm() {
       return;
     }
 
-    // Wait for the user to be authenticated
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: formData.email,
-      password: formData.password,
-    });
-
-    if (signInError) {
-      console.error("SignIn Error:", signInError);
-      setStatus(signInError.message);
-      setLoading(false);
-      return;
-    }
-
-    // Ensure the user is authenticated and the ID is set correctly
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData) {
-      console.error("User Error:", userError);
-      setStatus("Error retrieving user information.");
-      setLoading(false);
-      return;
-    }
-
-    const { error: insertError } = await supabase.from("profiles").insert([
+    // Step 2: Insert member data into the `members` table
+    const { error: insertError } = await supabase.from("members").insert([
       {
-        id: userData.user.id,
+        id: user.id, // Use the user's ID from auth
         full_name: formData.fullName,
-        phone: formData.phone,
+        phone_number: formData.phone,
+        email: formData.email,
         profession: formData.profession,
-      //  membership_type: formData.membershipType,
-        status: "pending",
+        membership_tier: formData.membershipTier, // Include the selected membership tier
+        payment_status: "pending", // Default payment status
+        membership_status: "pending", // Default membership status
       },
     ]);
 
     if (insertError) {
       console.error("Insert Error:", insertError);
-      setStatus(
-        <>
-          You already have an account.
-        </>
-      );
+      setStatus("You already have an account.");
       setLoading(false);
       return;
     }
@@ -125,13 +106,19 @@ export function RegisterForm() {
       profession: "",
       password: "",
       confirmPassword: "",
-    //  membershipType: "Associate",
+      membershipTier: selectedTier?.name || "", // Reset the membership tier
     });
 
     setTimeout(() => {
-      navigate("/memberportal/payment-processing");
+      navigate("/memberportal/payment-processing", {
+        state: {
+          selectedTier: selectedTier, // Pass the selected membership tier
+          fullName: formData.fullName, // Pass the full name
+          phone: formData.phone, // Pass the phone number
+        },
+      });
     }, 1000);
-  };
+  }; 
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -220,6 +207,19 @@ export function RegisterForm() {
               />
             </div>
 
+            {/* Display the selected membership tier as read-only text */}
+            <div>
+              <label
+                htmlFor="membershipTier"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Membership Tier
+              </label>
+              <div className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100 p-2">
+                {formData.membershipTier}
+              </div>
+            </div>
+
             <div className="relative">
               <label
                 htmlFor="password"
@@ -276,8 +276,6 @@ export function RegisterForm() {
               </div>
             </div>
 
-            
-
             <div>
               <button
                 type="submit"
@@ -295,7 +293,7 @@ export function RegisterForm() {
                   : "Apply Now"}
               </button>
               <p className="mt-2 text-center text-sm text-gray-600">
-              Have you confirmed your email? Press 'Apply Now' again to continue!
+                Don't Forget to Confirm Your Email
               </p>
             </div>
           </form>

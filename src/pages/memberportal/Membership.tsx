@@ -1,6 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Shield, Award, Users, BookOpen, Heart, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+// Define the type for a membership tier
+interface MembershipTier {
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+}
 
 export function Membership() {
   const navigate = useNavigate();
@@ -44,7 +52,7 @@ export function Membership() {
     },
   ];
 
-  const membershipTiers = [
+  const membershipTiers: MembershipTier[] = [
     {
       name: "Student Member",
       price: "KSH 10,000/year",
@@ -83,8 +91,9 @@ export function Membership() {
     },
   ];
 
-  const handleApplyNow = () => {
-    navigate("/memberportal/register-form");
+  // Add the type to the `tier` parameter
+  const handleApplyNow = (tier: MembershipTier) => {
+    navigate("/memberportal/register-form", { state: { selectedTier: tier } });
   };
 
   return (
@@ -168,7 +177,7 @@ export function Membership() {
                 </ul>
                 <button
                   className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors"
-                  onClick={handleApplyNow}
+                  onClick={() => handleApplyNow(tier)} // Pass the tier to the handler
                 >
                   Apply Now
                 </button>

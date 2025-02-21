@@ -25,7 +25,7 @@ const PaymentProcessing = () => {
 
     // Check if Transaction ID already exists
     const { data: existingTransactions, error: fetchError } = await supabase
-      .from("payments")
+      .from("members")
       .select("transaction_id")
       .eq("transaction_id", transactionId);
 
@@ -44,17 +44,17 @@ const PaymentProcessing = () => {
       return;
     }
 
-    // Store payment details in the new table
-    const { data, error } = await supabase.from("payments").insert([
-      {
-        full_name: fullName,
-        phone_number: phoneNumber,
+    // Store payment details in the `members` table
+    const { data, error } = await supabase
+      .from("members")
+      .update({
         transaction_id: transactionId,
-        action_type: actionType,
-        membership_tier: membershipTier,
-        status: "pending",
-      },
-    ]);
+        payment_status: "pending", // Set payment status to pending
+        membership_tier: membershipTier, // Include membership tier
+        action_type: actionType, // Include action type (renew/upgrade)
+      })
+      .eq("full_name", fullName) // Use full_name to identify the member
+      .eq("phone_number", phoneNumber); // Use phone_number to identify the member
 
     if (error) {
       console.error("Error submitting payment details:", error);

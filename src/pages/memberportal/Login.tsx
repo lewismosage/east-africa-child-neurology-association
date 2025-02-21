@@ -46,49 +46,47 @@ export function Login() {
       return;
     }
 
-    // Step 2: Fetch payment and profile data
+    // Step 2: Fetch member data
     try {
-      // Fetch payment data
-      const { data: paymentData, error: paymentError } = await supabase
-        .from("payments")
-        .select("status")
-        .eq("user_id", userId) // Assuming `user_id` is the foreign key in the `payments` table
-        .order("created_at", { ascending: false }) // Get the latest payment
-        .limit(1);
-
-      if (paymentError) {
-        throw paymentError;
-      }
-
-      // Fetch profile data
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("membership_status")
+      const { data: memberData, error: memberError } = await supabase
+        .from("members")
+        .select("payment_status, membership_status")
         .eq("id", userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle to handle cases where no data is found
 
-      if (profileError) {
-        throw profileError;
+      if (memberError) {
+        throw memberError;
       }
 
-      // Step 3: Check conditions
-      if (paymentData.length === 0 || paymentData[0].status !== "approved") {
-        // No payment or payment not approved
-        navigate("/memberportal/payment-processing");
+      // Step 3: Check if member data exists
+      if (!memberData) {
+        setStatus("Profile not found. Please contact support.");
         return;
       }
 
-      if (profileData.membership_status !== "active") {
-        // Profile is not active
-        setStatus("Your account is awaiting activation. Please contact support.");
-        return;
+      // Step 4: Check conditions
+      if (memberData.payment_status === "approved" && memberData.membership_status === "active") {
+        // Payment is approved and membership is active
+        setStatus("Login successful!");
+        navigate("/memberportal/portaldashboard");
+      } else if (memberData.payment_status === "pending" && memberData.membership_status === "active") {
+        // Payment is pending but membership is active
+        setStatus("Your payment is still under verification. Please wait for approval.");
+      } else if (memberData.payment_status === "pending" && memberData.membership_status === "pending") {
+        // Payment is pending and membership is pending
+        setStatus("Your payment and membership are still under verification. Please wait for approval.");
+      } else if (memberData.payment_status === null || memberData.payment_status === "") {
+        // No payment made
+        setStatus("No payment found. Redirecting to payment section...");
+        setTimeout(() => {
+          navigate("/memberportal/payment-processing");
+        }, 2000); // Redirect after 2 seconds
+      } else {
+        // Other cases
+        setStatus("Your account is not active. Please contact support.");
       }
-
-      // Step 4: Allow access to the members portal
-      setStatus("Login successful!");
-      navigate("/memberportal/portaldashboard");
     } catch (error) {
-      console.error("Error fetching payment or profile data:", error);
+      console.error("Error fetching member data:", error);
       setStatus("An error occurred. Please try again.");
     }
   };

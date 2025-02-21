@@ -1,21 +1,32 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../../../supabaseClient";
 
 const PaymentProcessing = () => {
-  const [fullName, setFullName] = useState<string>("");
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [transactionId, setTransactionId] = useState<string>("");
   const [status, setStatus] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
   const navigate = useNavigate();
-  const [membershipTier, setMembershipTier] = useState<string>(""); // "Student", "Associate", "Full Member"
+  const location = useLocation();
+
+  // Access data passed from RegisterForm
+  const selectedTier = location.state?.selectedTier;
+  const fullName = location.state?.fullName || ""; // Pre-fill full name
+  const phone = location.state?.phone || ""; // Pre-fill phone number
+  const email = location.state?.email || ""; // Pre-fill email (if available)
+
+  // Redirect if selectedTier is missing
+  useEffect(() => {
+    if (!selectedTier) {
+      navigate("/memberportal/register-form"); // Redirect to the registration page
+    }
+  }, [selectedTier, navigate]);
 
   // Function to check if the Transaction ID already exists in the database
   const checkTransactionIdExists = async (transactionId: string): Promise<boolean> => {
     const { data, error } = await supabase
-      .from("payments")
+      .from("members")
       .select("transaction_id")
       .eq("transaction_id", transactionId);
 
@@ -39,7 +50,7 @@ const PaymentProcessing = () => {
     }
 
     // Validate that membershipTier is selected
-    if (!membershipTier) {
+    if (!selectedTier) {
       setStatus("Please select a membership tier.");
       setLoading(false);
       return;
@@ -55,16 +66,15 @@ const PaymentProcessing = () => {
       return;
     }
 
-    // Store payment details in Supabase
-    const { data, error } = await supabase.from("payments").insert([
-      {
-        full_name: fullName,
-        phone_number: phoneNumber,
+    // Store payment details in the `members` table
+    const { data, error } = await supabase
+      .from("members")
+      .update({
         transaction_id: transactionId,
-        status: "pending",
-        membership_tier: membershipTier, // Include membership tier
-      },
-    ]);
+        payment_status: "pending", // Set payment status to pending
+        membership_tier: selectedTier.name, // Use the selected membership tier
+      })
+      .eq("phone_number", phone); // Use phone_number to identify the member
 
     if (error) {
       console.error("Error submitting payment details:", error);
@@ -130,49 +140,40 @@ const PaymentProcessing = () => {
                 type="text"
                 required
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                value={fullName} // Pre-filled from RegisterForm
+                readOnly // Make the field read-only
               />
             </div>
 
             <div>
               <label
-                htmlFor="phoneNumber"
+                htmlFor="phone"
                 className="block text-sm font-medium text-gray-700"
               >
                 Phone Number
               </label>
               <input
-                id="phoneNumber"
-                name="phoneNumber"
+                id="phone"
+                name="phone"
                 type="text"
                 required
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                value={phone} // Pre-filled from RegisterForm
+                readOnly // Make the field read-only
               />
             </div>
 
+            {/* Display the selected membership tier as read-only text */}
             <div>
               <label
-                htmlFor="membershipType"
+                htmlFor="membershipTier"
                 className="block text-sm font-medium text-gray-700"
               >
-                Membership Type
+                Membership Tier
               </label>
-              <select
-                id="membershipType"
-                name="membershipType"
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                value={membershipTier} // Ensure selected value is bound to state
-                onChange={(e) => setMembershipTier(e.target.value)} // Update state when changed
-              >
-                <option value="">Select Membership Tier</option>
-                <option value="Student Member">Student Member</option>
-                <option value="Associate Member">Associate Member</option>
-                <option value="Full Member">Full Member</option>
-              </select>
+              <div className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100 p-2">
+                {selectedTier?.name}
+              </div>
             </div>
 
             <div>

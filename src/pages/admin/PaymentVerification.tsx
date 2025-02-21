@@ -1,58 +1,62 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../../../supabaseClient";
 
-interface Payment {
-  id: number;
+interface Member {
+  id: string; // UUID
   full_name: string;
   phone_number: string;
   transaction_id: string;
-  status: string;
-  membership_tier: string; // Added membership_tier to the interface
+  payment_status: string; // Updated from `status` to `payment_status`
+  membership_tier: string;
+  membership_status: string; // Added membership_status
 }
 
 const PaymentVerification = () => {
-  const [payments, setPayments] = useState<Payment[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchPayments = async () => {
+    const fetchMembers = async () => {
       try {
+        // Fetch all members with pending payments
         const { data, error } = await supabase
-          .from("payments")
+          .from("members")
           .select("*")
-          .order("id", { ascending: false }); // Fetch data in descending order
+          .eq("payment_status", "pending") // Only fetch members with pending payments
+          .order("created_at", { ascending: false }); // Fetch data in descending order
 
         if (error) {
           throw error;
         }
 
-        setPayments(data as Payment[]); // Explicitly cast data to Payment[]
+        setMembers(data as Member[]); // Explicitly cast data to Member[]
       } catch (error) {
-        setError("Error fetching payments. Please try again.");
+        setError("Error fetching members. Please try again.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPayments();
+    fetchMembers();
 
-    const paymentSubscription = supabase
-      .channel("public:payments")
+    // Set up real-time subscription for changes to the `members` table
+    const membersSubscription = supabase
+      .channel("public:members")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "payments" },
+        { event: "*", schema: "public", table: "members" },
         (payload) => {
           if (payload.eventType === "INSERT") {
-            // Ensure payload.new matches the Payment interface
-            const newPayment = payload.new as Payment;
-            setPayments((prevPayments) => [newPayment, ...prevPayments]);
+            // Ensure payload.new matches the Member interface
+            const newMember = payload.new as Member;
+            setMembers((prevMembers) => [newMember, ...prevMembers]);
           } else if (payload.eventType === "UPDATE") {
-            // Ensure payload.new matches the Payment interface
-            const updatedPayment = payload.new as Payment;
-            setPayments((prevPayments) =>
-              prevPayments.map((payment) =>
-                payment.id === updatedPayment.id ? updatedPayment : payment
+            // Ensure payload.new matches the Member interface
+            const updatedMember = payload.new as Member;
+            setMembers((prevMembers) =>
+              prevMembers.map((member) =>
+                member.id === updatedMember.id ? updatedMember : member
               )
             );
           }
@@ -61,26 +65,35 @@ const PaymentVerification = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(paymentSubscription);
+      supabase.removeChannel(membersSubscription);
     };
   }, []);
 
-  const handleVerifyPayment = async (paymentId: number) => {
+  const handleVerifyPayment = async (memberId: string) => {
     try {
+      // Step 1: Update payment_status to "approved" and membership_status to "active"
       const { error } = await supabase
-        .from("payments")
-        .update({ status: "approved" })
-        .eq("id", paymentId);
+        .from("members")
+        .update({
+          payment_status: "approved",
+          membership_status: "active",
+        })
+        .eq("id", memberId);
 
       if (error) {
         throw error;
       }
 
-      setPayments((prevPayments) =>
-        prevPayments.map((payment) =>
-          payment.id === paymentId ? { ...payment, status: "approved" } : payment
+      // Step 2: Update the UI
+      setMembers((prevMembers) =>
+        prevMembers.map((member) =>
+          member.id === memberId
+            ? { ...member, payment_status: "approved", membership_status: "active" }
+            : member
         )
       );
+
+      setError(""); // Clear any previous errors
     } catch (error) {
       setError("Error verifying payment. Please try again.");
     }
@@ -119,7 +132,10 @@ const PaymentVerification = () => {
                       Membership Tier
                     </th>
                     <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
+                      Payment Status
+                    </th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Membership Status
                     </th>
                     <th className="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
@@ -127,27 +143,30 @@ const PaymentVerification = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {payments.map((payment) => (
-                    <tr key={payment.id}>
+                  {members.map((member) => (
+                    <tr key={member.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {payment.full_name}
+                        {member.full_name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {payment.phone_number}
+                        {member.phone_number}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {payment.transaction_id}
+                        {member.transaction_id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {payment.membership_tier}
+                        {member.membership_tier}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {payment.status === "approved" ? "Approved" : "Pending Approval"}
+                        {member.payment_status === "approved" ? "Approved" : "Pending Approval"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {member.membership_status === "active" ? "Active" : "Pending"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {payment.status === "pending" && (
+                        {member.payment_status === "pending" && (
                           <button
-                            onClick={() => handleVerifyPayment(payment.id)}
+                            onClick={() => handleVerifyPayment(member.id)}
                             className="text-green-600 hover:text-green-900"
                           >
                             Verify
