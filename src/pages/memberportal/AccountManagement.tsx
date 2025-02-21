@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../supabaseClient";
-import { LogOut, User, CreditCard, Shield, RefreshCw } from "lucide-react";
+import { LogOut, User, Shield, RefreshCw } from "lucide-react";
 
 interface UserData {
   id: string;
   full_name: string;
   email: string;
-  membership_tier: string;
-  payment_status: string;
+  membership_tier: string; // Ensure this field is included
   membership_status: string;
-  transaction_id?: string;
 }
 
 const AccountManagement = () => {
@@ -21,32 +19,26 @@ const AccountManagement = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Fetch authenticated user
+        // Get the current user session
         const { data: userData, error: authError } = await supabase.auth.getUser();
-        if (authError) {
-          throw authError;
-        }
+        if (authError) throw authError;
 
-        // Fetch additional user data from the `members` table
+        // Fetch user details from the `members` table
         const { data: memberData, error: memberError } = await supabase
           .from("members")
           .select("*")
           .eq("id", userData.user.id)
           .single();
 
-        if (memberError) {
-          throw memberError;
-        }
+        if (memberError) throw memberError;
 
-        // Combine user data
+        // Set user data, including membership_tier
         setUser({
           id: userData.user.id,
           full_name: userData.user.user_metadata.full_name || memberData.full_name,
           email: userData.user.email || memberData.email,
-          membership_tier: memberData.membership_tier || "Basic",
-          payment_status: memberData.payment_status || "Unknown",
+          membership_tier: memberData.membership_tier || "Basic", // Fetch membership_tier
           membership_status: memberData.membership_status || "Unknown",
-          transaction_id: memberData.transaction_id,
         });
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -103,12 +95,17 @@ const AccountManagement = () => {
                   <h3 className="text-xl font-semibold text-gray-800">Membership Details</h3>
                 </div>
                 <div className="mt-4 space-y-2">
-                  <p className="text-lg text-gray-700">Membership Tier: {user.membership_tier}</p>
+                  <p className="text-lg text-gray-700">
+                    Membership Tier:{" "}
+                    {user.membership_tier === "Student"
+                      ? "Student Member"
+                      : user.membership_tier === "Associate"
+                      ? "Associate Member"
+                      : user.membership_tier === "Full Member"
+                      ? "Full Member"
+                      : "Unknown"}
+                  </p>
                   <p className="text-lg text-gray-700">Membership Status: {user.membership_status}</p>
-                  <p className="text-lg text-gray-700">Payment Status: {user.payment_status}</p>
-                  {user.transaction_id && (
-                    <p className="text-lg text-gray-700">Transaction ID: {user.transaction_id}</p>
-                  )}
                 </div>
               </div>
 

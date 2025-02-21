@@ -11,6 +11,7 @@ const PaymentProcessing = () => {
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [actionType, setActionType] = useState<"renew" | "upgrade">("renew"); // "renew" or "upgrade"
   const [membershipTier, setMembershipTier] = useState<string>(""); // "Student", "Associate", "Full Member"
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); // Track if user is logged in
   const navigate = useNavigate();
 
   // Fetch user details from Supabase (or session) on component mount
@@ -19,30 +20,31 @@ const PaymentProcessing = () => {
       try {
         // Get the current user session
         const { data: user, error } = await supabase.auth.getUser();
-  
+
         if (error) {
           throw error;
         }
-  
+
         if (user) {
           console.log("User ID:", user.user.id); // Log the user ID for debugging
-  
+
           // Fetch user details from the `members` table
           const { data: memberData, error: memberError } = await supabase
             .from("members")
             .select("full_name, phone_number")
             .eq("id", user.user.id); // Temporarily remove `.single()`
-  
+
           if (memberError) {
             throw memberError;
           }
-  
+
           console.log("Member Data:", memberData); // Log the fetched data for debugging
-  
+
           if (memberData && memberData.length > 0) {
             // Populate full name and phone number
             setFullName(memberData[0].full_name);
             setPhoneNumber(memberData[0].phone_number);
+            setIsLoggedIn(true); // User is logged in
           } else {
             console.error("No matching member found for the given ID.");
             setStatus("No matching member found. Please contact support.");
@@ -50,10 +52,10 @@ const PaymentProcessing = () => {
         }
       } catch (error) {
         console.error("Error fetching user details:", error);
-        setStatus("Error fetching user details. Please try again.");
+        setIsLoggedIn(false); // User is not logged in
       }
     };
-  
+
     fetchUserDetails();
   }, []);
 
@@ -88,28 +90,66 @@ const PaymentProcessing = () => {
       return;
     }
 
-    // Store payment details in the `members` table
-    const { data, error } = await supabase
-      .from("members")
-      .update({
-        transaction_id: transactionId,
-        payment_status: "pending", // Set payment status to pending
-        membership_tier: membershipTier, // Include membership tier
-        action_type: actionType, // Include action type (renew/upgrade)
-      })
-      .eq("full_name", fullName) // Use full_name to identify the member
-      .eq("phone_number", phoneNumber); // Use phone_number to identify the member
+    try {
+      if (isLoggedIn) {
+        // Update existing record for logged-in users
+        const { data, error } = await supabase
+          .from("members")
+          .update({
+            transaction_id: transactionId,
+            payment_status: "pending", // Set payment status to pending
+            membership_tier: membershipTier, // Include membership tier
+            action_type: actionType, // Include action type (renew/upgrade)
+          })
+          .eq("full_name", fullName) // Use full_name to identify the member
+          .eq("phone_number", phoneNumber); // Use phone_number to identify the member
 
-    if (error) {
+        if (error) {
+          throw error;
+        }
+      } else {
+        // For non-logged-in users, search for a matching record
+        const { data: memberData, error: searchError } = await supabase
+          .from("members")
+          .select("*")
+          .eq("full_name", fullName)
+          .eq("phone_number", phoneNumber);
+
+        if (searchError) {
+          throw searchError;
+        }
+
+        if (memberData && memberData.length > 0) {
+          // Update the existing record
+          const { error: updateError } = await supabase
+            .from("members")
+            .update({
+              transaction_id: transactionId,
+              payment_status: "pending", // Set payment status to pending
+              membership_tier: membershipTier, // Include membership tier
+              action_type: actionType, // Include action type (renew/upgrade)
+            })
+            .eq("id", memberData[0].id); // Use the ID of the matched record
+
+          if (updateError) {
+            throw updateError;
+          }
+        } else {
+          // No matching record found
+          setStatus("No matching member found. Please contact support.");
+          setLoading(false);
+          return;
+        }
+      }
+
+      setStatus("PAYMENT UNDER VERIFICATION");
+      setSubmitted(true);
+    } catch (error) {
       console.error("Error submitting payment details:", error);
       setStatus("Error submitting payment details. Please try again.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setStatus("PAYMENT UNDER VERIFICATION");
-    setSubmitted(true);
-    setLoading(false);
   };
 
   return (
@@ -206,7 +246,7 @@ const PaymentProcessing = () => {
               />
             </div>
 
-            {/* Full Name (Read-only) */}
+            {/* Full Name */}
             <div>
               <label
                 htmlFor="fullName"
@@ -219,13 +259,16 @@ const PaymentProcessing = () => {
                 name="fullName"
                 type="text"
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100"
+                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                  isLoggedIn ? "bg-gray-100" : ""
+                }`}
                 value={fullName} // Pre-populated from user account
-                readOnly // Make the field read-only
+                readOnly={isLoggedIn} // Make the field read-only if logged in
+                onChange={(e) => setFullName(e.target.value)} // Allow editing if not logged in
               />
             </div>
 
-            {/* Phone Number (Read-only) */}
+            {/* Phone Number */}
             <div>
               <label
                 htmlFor="phoneNumber"
@@ -238,9 +281,12 @@ const PaymentProcessing = () => {
                 name="phoneNumber"
                 type="text"
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100"
+                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                  isLoggedIn ? "bg-gray-100" : ""
+                }`}
                 value={phoneNumber} // Pre-populated from user account
-                readOnly // Make the field read-only
+                readOnly={isLoggedIn} // Make the field read-only if logged in
+                onChange={(e) => setPhoneNumber(e.target.value)} // Allow editing if not logged in
               />
             </div>
 

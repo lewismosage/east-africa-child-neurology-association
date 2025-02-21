@@ -9,6 +9,7 @@ interface Member {
   payment_status: string; // Updated from `status` to `payment_status`
   membership_tier: string;
   membership_status: string; // Added membership_status
+  action_type: string; // Added action_type
   created_at: string; // Ensure this field is included
 }
 
@@ -20,16 +21,16 @@ const PaymentVerification = () => {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        // Fetch all members, regardless of payment_status
+        // Fetch all members, including action_type
         const { data, error } = await supabase
           .from("members")
           .select("*")
           .order("created_at", { ascending: false }); // Sort by created_at in descending order
-  
+
         if (error) {
           throw error;
         }
-  
+
         // Sort members: pending members first, then approved/active members
         const sortedMembers = data.sort((a, b) => {
           if (a.payment_status === "pending" && b.payment_status !== "pending") {
@@ -40,7 +41,7 @@ const PaymentVerification = () => {
             return 0; // no change in order
           }
         });
-  
+
         console.log("Fetched members:", sortedMembers);
         setMembers(sortedMembers as Member[]);
       } catch (error) {
@@ -50,9 +51,9 @@ const PaymentVerification = () => {
         setLoading(false);
       }
     };
-  
+
     fetchMembers();
-  
+
     // Set up real-time subscription for changes to the `members` table
     const membersSubscription = supabase
       .channel("public:members")
@@ -82,7 +83,7 @@ const PaymentVerification = () => {
         }
       )
       .subscribe();
-  
+
     return () => {
       supabase.removeChannel(membersSubscription);
     };
@@ -98,11 +99,11 @@ const PaymentVerification = () => {
           membership_status: "active",
         })
         .eq("id", memberId);
-  
+
       if (error) {
         throw error;
       }
-  
+
       // Update the UI
       setMembers((prevMembers) =>
         prevMembers.map((member) =>
@@ -111,18 +112,26 @@ const PaymentVerification = () => {
             : member
         )
       );
-  
+
       setError(""); // Clear any previous errors
     } catch (error) {
       setError("Error verifying payment. Please try again.");
     }
   };
 
+  // Determine the action type for display
+  const getActionTypeDisplay = (member: Member) => {
+    if (!member.action_type) {
+      return "New User"; // If action_type is not set, assume it's a new user
+    }
+    return member.action_type === "renew" ? "Renew" : "Upgrade";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col py-6 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-7xl">
         <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
-         Membership & Payment Verification
+          Membership & Payment Verification
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Verify payments sent by members
@@ -151,6 +160,9 @@ const PaymentVerification = () => {
                       Membership Tier
                     </th>
                     <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action Type
+                    </th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Payment Status
                     </th>
                     <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -175,6 +187,9 @@ const PaymentVerification = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {member.membership_tier}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {getActionTypeDisplay(member)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {member.payment_status === "approved" ? "Approved" : "Pending Approval"}
