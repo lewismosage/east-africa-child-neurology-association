@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Shield } from 'lucide-react';
+import { supabase } from '../../../supabaseClient'; // Import the Supabase client
 
 export function AdminLogin() {
   const navigate = useNavigate();
@@ -12,12 +13,32 @@ export function AdminLogin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // For demo purposes, using hardcoded credentials
-    if (formData.email === 'admin@eacna.org' && formData.password === 'admin123') {
-      localStorage.setItem('adminAuth', 'true');
-      navigate('/admin/resources');
-    } else {
-      setError('Invalid credentials');
+    setError(''); // Clear previous errors
+
+    try {
+      // Step 1: Authenticate the admin using Supabase Auth
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // Step 2: Check if the authenticated user is an admin
+      if (data.user?.email === 'admin@eacna.org') {
+        // Step 3: Store the admin's session in localStorage (optional)
+        localStorage.setItem('adminAuth', 'true');
+
+        // Step 4: Redirect to the admin dashboard
+        navigate('/admin/resources');
+      } else {
+        setError('You do not have admin privileges.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Invalid credentials. Please try again.');
     }
   };
 
@@ -42,7 +63,7 @@ export function AdminLogin() {
               {error}
             </div>
           )}
-          
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">

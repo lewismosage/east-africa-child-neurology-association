@@ -9,6 +9,7 @@ interface Member {
   payment_status: string; // Updated from `status` to `payment_status`
   membership_tier: string;
   membership_status: string; // Added membership_status
+  created_at: string; // Ensure this field is included
 }
 
 const PaymentVerification = () => {
@@ -19,27 +20,39 @@ const PaymentVerification = () => {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        // Fetch all members with pending payments
+        // Fetch all members, regardless of payment_status
         const { data, error } = await supabase
           .from("members")
           .select("*")
-          .eq("payment_status", "pending") // Only fetch members with pending payments
-          .order("created_at", { ascending: false }); // Fetch data in descending order
-
+          .order("created_at", { ascending: false }); // Sort by created_at in descending order
+  
         if (error) {
           throw error;
         }
-
-        setMembers(data as Member[]); // Explicitly cast data to Member[]
+  
+        // Sort members: pending members first, then approved/active members
+        const sortedMembers = data.sort((a, b) => {
+          if (a.payment_status === "pending" && b.payment_status !== "pending") {
+            return -1; // a comes before b
+          } else if (a.payment_status !== "pending" && b.payment_status === "pending") {
+            return 1; // b comes before a
+          } else {
+            return 0; // no change in order
+          }
+        });
+  
+        console.log("Fetched members:", sortedMembers);
+        setMembers(sortedMembers as Member[]);
       } catch (error) {
+        console.error("Error fetching members:", error);
         setError("Error fetching members. Please try again.");
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchMembers();
-
+  
     // Set up real-time subscription for changes to the `members` table
     const membersSubscription = supabase
       .channel("public:members")
@@ -47,12 +60,18 @@ const PaymentVerification = () => {
         "postgres_changes",
         { event: "*", schema: "public", table: "members" },
         (payload) => {
+          console.log("Real-time update:", payload);
           if (payload.eventType === "INSERT") {
-            // Ensure payload.new matches the Member interface
             const newMember = payload.new as Member;
-            setMembers((prevMembers) => [newMember, ...prevMembers]);
+            setMembers((prevMembers) => {
+              // Add new member at the top if payment_status is pending
+              if (newMember.payment_status === "pending") {
+                return [newMember, ...prevMembers];
+              } else {
+                return [...prevMembers, newMember];
+              }
+            });
           } else if (payload.eventType === "UPDATE") {
-            // Ensure payload.new matches the Member interface
             const updatedMember = payload.new as Member;
             setMembers((prevMembers) =>
               prevMembers.map((member) =>
@@ -63,7 +82,7 @@ const PaymentVerification = () => {
         }
       )
       .subscribe();
-
+  
     return () => {
       supabase.removeChannel(membersSubscription);
     };
@@ -71,7 +90,7 @@ const PaymentVerification = () => {
 
   const handleVerifyPayment = async (memberId: string) => {
     try {
-      // Step 1: Update payment_status to "approved" and membership_status to "active"
+      // Update payment_status to "approved" and membership_status to "active"
       const { error } = await supabase
         .from("members")
         .update({
@@ -79,12 +98,12 @@ const PaymentVerification = () => {
           membership_status: "active",
         })
         .eq("id", memberId);
-
+  
       if (error) {
         throw error;
       }
-
-      // Step 2: Update the UI
+  
+      // Update the UI
       setMembers((prevMembers) =>
         prevMembers.map((member) =>
           member.id === memberId
@@ -92,7 +111,7 @@ const PaymentVerification = () => {
             : member
         )
       );
-
+  
       setError(""); // Clear any previous errors
     } catch (error) {
       setError("Error verifying payment. Please try again.");
@@ -103,7 +122,7 @@ const PaymentVerification = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col py-6 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-7xl">
         <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
-          Payment Verification
+         Membership & Payment Verification
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Verify payments sent by members
