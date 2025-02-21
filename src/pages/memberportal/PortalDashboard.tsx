@@ -33,52 +33,64 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        console.error("Error fetching user data:", userError);
-        navigate("/membership/login", { state: { status: "Please log in to access the dashboard." } });
-        return;
-      }
+      // Check local storage for existing session
+      const storedSession = localStorage.getItem("supabaseSession");
 
-      // Fetch user's membership and payment status
-      const { data: memberData, error: memberError } = await supabase
-        .from("members")
-        .select("membership_status, payment_status")
-        .eq("email", userData.user.email)
-        .single();
+      if (storedSession) {
+        const session = JSON.parse(storedSession);
 
-      if (memberError) {
-        console.error("Error fetching membership data:", memberError);
-        navigate("/membership/login", { state: { status: "An error occurred. Please try again." } });
-        return;
-      }
+        // Restore session from local storage
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          console.error("Error fetching user data:", userError);
+          localStorage.removeItem("supabaseSession"); // Clear invalid session
+          navigate("/membership/login", { state: { status: "Please log in to access the dashboard." } });
+          return;
+        }
 
-      // Check if the user is active
-      if (memberData.membership_status !== "active" || memberData.payment_status !== "approved") {
-        navigate("/membership/login", { state: { status: "Your account is inactive. Please complete your payment or contact support." } });
-        return;
-      }
+        // Fetch user's membership and payment status
+        const { data: memberData, error: memberError } = await supabase
+          .from("members")
+          .select("membership_status, payment_status")
+          .eq("email", userData.user.email)
+          .single();
 
-      // Set user data
-      setUser({
-        user_metadata: {
-          full_name: userData.user.user_metadata.full_name,
-        },
-      });
+        if (memberError) {
+          console.error("Error fetching membership data:", memberError);
+          navigate("/membership/login", { state: { status: "An error occurred. Please try again." } });
+          return;
+        }
 
-      // Fetch projects
-      const { data: projectsData, error: projectsError } = await supabase
-        .from("projects")
-        .select("*")
-        .limit(3);
+        // Check if the user is active
+        if (memberData.membership_status !== "active" || memberData.payment_status !== "approved") {
+          navigate("/membership/login", { state: { status: "Your account is inactive. Please complete your payment or contact support." } });
+          return;
+        }
 
-      if (projectsError) {
-        console.error("Error fetching projects:", projectsError);
+        // Set user data
+        setUser({
+          user_metadata: {
+            full_name: userData.user.user_metadata.full_name,
+          },
+        });
+
+        // Fetch projects
+        const { data: projectsData, error: projectsError } = await supabase
+          .from("projects")
+          .select("*")
+          .limit(3);
+
+        if (projectsError) {
+          console.error("Error fetching projects:", projectsError);
+        } else {
+          setProjects(projectsData);
+        }
+
+        setLoading(false); // Data fetching is complete
       } else {
-        setProjects(projectsData);
+        // No session found, redirect to login
+        navigate("/membership/login", { state: { status: "Please log in to access the dashboard." } });
       }
-
-      setLoading(false); // Data fetching is complete
     };
 
     fetchUserData();

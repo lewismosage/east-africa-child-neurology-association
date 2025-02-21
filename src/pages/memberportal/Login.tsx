@@ -8,10 +8,23 @@ export function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    rememberMe: false,
   });
   const [status, setStatus] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem("rememberedEmail");
+    const rememberedPassword = localStorage.getItem("rememberedPassword");
+
+    if (rememberedEmail && rememberedPassword) {
+      setFormData({
+        email: rememberedEmail,
+        password: rememberedPassword,
+        rememberMe: true,
+      });
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +75,20 @@ export function Login() {
       // Step 4: Check conditions
       if (memberData.payment_status === "approved" && memberData.membership_status === "active") {
         setStatus("Login successful!");
+
+        // Save session to local storage
+        localStorage.setItem("supabaseSession", JSON.stringify(authData));
+
+        // Save credentials to localStorage if "Remember Me" is checked
+        if (formData.rememberMe) {
+          localStorage.setItem("rememberedEmail", formData.email);
+          localStorage.setItem("rememberedPassword", formData.password);
+        } else {
+          // Clear remembered credentials if "Remember Me" is not checked
+          localStorage.removeItem("rememberedEmail");
+          localStorage.removeItem("rememberedPassword");
+        }
+
         navigate("/memberportal/portaldashboard");
       } else if (!memberData.transaction_id) {
         setStatus(
@@ -170,6 +197,10 @@ export function Login() {
                   name="remember-me"
                   type="checkbox"
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  checked={formData.rememberMe}
+                  onChange={(e) =>
+                    setFormData({ ...formData, rememberMe: e.target.checked })
+                  }
                 />
                 <label
                   htmlFor="remember-me"
