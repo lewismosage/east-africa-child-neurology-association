@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FileText, Calendar, CreditCard, Settings, LogOut, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { RequireAuth } from "../../components/admin/RequireAuth";
@@ -13,11 +13,19 @@ export function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sectionCollapsed, setSectionCollapsed] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleSignOut = () => {
     localStorage.removeItem("authToken");
     navigate("/admin/login");
+  };
+
+  const toggleSidebar = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const isLinkActive = (path: string) => {
+    return location.pathname.startsWith(path);
   };
 
   return (
@@ -27,53 +35,51 @@ export function AdminLayout() {
         <aside
           className={`fixed inset-y-0 left-0 z-50 transform bg-white shadow-lg transition-transform lg:relative lg:translate-x-0 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } lg:block ${sectionCollapsed ? "w-16" : "w-64"} p-5 flex flex-col justify-between`}
+          } lg:block ${isExpanded ? "w-64" : "w-24"} p-5 flex flex-col justify-between`} // Fixed
         >
           <div>
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center space-x-2">
-                <Settings className="h-6 w-6 text-blue-600" />
-                {!sectionCollapsed && <span className="text-xl font-bold text-gray-900">Admin Panel</span>}
+                <Settings className="h-7 w-7 text-blue-600" /> {/* Larger icon */}
+                {isExpanded && <span className="text-xl font-bold text-gray-900">Admin Panel</span>}
               </div>
               <button
-                onClick={() => setSectionCollapsed(!sectionCollapsed)}
+                onClick={toggleSidebar}
                 className="text-gray-700 hover:text-gray-900"
               >
-                {sectionCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+                {isExpanded ? <ChevronLeft className="h-6 w-6" /> : <ChevronRight className="h-6 w-6" />} {/* Larger icon */}
               </button>
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="text-gray-700 hover:text-gray-900 lg:hidden"
               >
-                <X className="h-5 w-5" />
+                <X className="h-6 w-6" /> {/* Larger icon */}
               </button>
             </div>
-            {!sectionCollapsed && (
-              <nav>
-                {sidebarItems.map(({ icon: Icon, label, path }) => (
-                  <Link
-                    key={path}
-                    to={path}
-                    className={`flex items-center px-4 py-3 text-gray-700 hover:bg-blue-100 rounded-lg transition-colors ${
-                      location.pathname === path ? "bg-blue-100 text-blue-600" : ""
-                    }`}
-                  >
-                    <Icon className="h-5 w-5 mr-3" />
-                    <span className="text-sm font-medium">{label}</span>
-                  </Link>
-                ))}
-              </nav>
-            )}
+            <nav>
+              {sidebarItems.map(({ icon: Icon, label, path }) => (
+                <Link
+                  key={path}
+                  to={path}
+                  className={`flex items-center px-4 py-3 text-gray-700 hover:bg-blue-100 rounded-lg transition-colors ${
+                    isLinkActive(path) ? "bg-blue-100 text-blue-600" : ""
+                  } ${!isExpanded ? "justify-center" : ""}`}
+                >
+                  <Icon className="h-6 w-6" /> {/* Larger icon */}
+                  {isExpanded && <span className="text-sm font-medium ml-3">{label}</span>}
+                </Link>
+              ))}
+            </nav>
           </div>
-          {!sectionCollapsed && (
-            <button
-              onClick={handleSignOut}
-              className="flex items-center px-4 py-3 text-red-600 hover:bg-red-100 rounded-lg transition-colors w-full"
-            >
-              <LogOut className="h-5 w-5 mr-3" />
-              <span className="text-sm font-medium">Sign Out</span>
-            </button>
-          )}
+          <button
+            onClick={handleSignOut}
+            className={`flex items-center px-4 py-3 text-red-600 hover:bg-red-100 rounded-lg transition-colors w-full ${
+              !isExpanded ? "justify-center" : ""
+            }`}
+          >
+            <LogOut className="h-6 w-6" /> {/* Larger icon */}
+            {isExpanded && <span className="text-sm font-medium ml-3">Sign Out</span>}
+          </button>
         </aside>
 
         {/* Main Content */}
@@ -84,7 +90,7 @@ export function AdminLayout() {
               onClick={() => setSidebarOpen(true)}
               className="text-gray-700 hover:text-gray-900"
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="h-6 w-6" /> {/* Larger icon */}
             </button>
             <h1 className="text-lg font-semibold">Admin Dashboard</h1>
           </header>
