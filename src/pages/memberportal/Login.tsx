@@ -28,6 +28,8 @@ export function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log("Form Data:", formData); // Debugging
+
     // Step 1: Sign in the user
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: formData.email,
@@ -35,9 +37,12 @@ export function Login() {
     });
 
     if (authError) {
-      setStatus("Login failed. Please check your email and password.");
+      console.error("Auth Error:", authError); // Debugging
+      setStatus(`Login failed: ${authError.message}`);
       return;
     }
+
+    console.log("Auth Data:", authData); // Debugging
 
     const userId = authData.user?.id;
 
@@ -50,13 +55,15 @@ export function Login() {
     try {
       const { data: memberData, error: memberError } = await supabase
         .from("members")
-        .select("payment_status, membership_status")
+        .select("payment_status, membership_status, transaction_id")
         .eq("id", userId)
-        .maybeSingle(); // Use maybeSingle to handle cases where no data is found
+        .maybeSingle();
 
       if (memberError) {
         throw memberError;
       }
+
+      console.log("Member Data:", memberData); // Debugging
 
       // Step 3: Check if member data exists
       if (!memberData) {
@@ -66,23 +73,14 @@ export function Login() {
 
       // Step 4: Check conditions
       if (memberData.payment_status === "approved" && memberData.membership_status === "active") {
-        // Payment is approved and membership is active
         setStatus("Login successful!");
         navigate("/memberportal/portaldashboard");
-      } else if (memberData.payment_status === "pending" && memberData.membership_status === "active") {
-        // Payment is pending but membership is active
-        setStatus("Your payment is still under verification. Please wait for approval.");
-      } else if (memberData.payment_status === "pending" && memberData.membership_status === "pending") {
-        // Payment is pending and membership is pending
-        setStatus("Your payment and membership are still under verification. Please wait for approval.");
-      } else if (memberData.payment_status === null || memberData.payment_status === "") {
-        // No payment made
-        setStatus("No payment found. Redirecting to payment section...");
-        setTimeout(() => {
-          navigate("/memberportal/payment-processing");
-        }, 2000); // Redirect after 2 seconds
+      } else if (!memberData.transaction_id) {
+        setStatus("You will access the member portal after you make the membership payment. Pay. /memberportal/payment-processing ");
+        
+      } else if (memberData.payment_status === "pending" || memberData.membership_status === "pending") {
+        setStatus("You will be able to log in once your payment is verified.");
       } else {
-        // Other cases
         setStatus("Your account is not active. Please contact support.");
       }
     } catch (error) {
