@@ -36,6 +36,7 @@ import { NationalPolicies } from './pages/NationalPolicies';
 import  { InternationalGuidelines } from './pages/InternationalGuidelines';
 import { MedicalPracticeRegulations } from './pages/MedicalPracticeRegulations';
 import { LegislativeNews } from './pages/LegislativeNews';
+import PaymentPage from './pages/memberportal/PaymentPage';
 
 const App = () => {
   return (
@@ -72,6 +73,7 @@ const App = () => {
         <Route path="/international-guidelines" element={<InternationalGuidelines />} />
         <Route path="/medical-practice-regulations" element={<MedicalPracticeRegulations />} />
         <Route path="/legislative-news" element={<LegislativeNews />} />
+        <Route path="/memberportal/payment-page" element={<PaymentPage />} />
 
          {/* Admin Login Page */}
          <Route path="/admin/login" element={<AdminLogin />} />

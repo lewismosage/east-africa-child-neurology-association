@@ -28,38 +28,70 @@ const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [showLibrary, setShowLibrary] = useState(false);
+  const [loading, setLoading] = useState(true); // Add loading state
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data: userData, error } = await supabase.auth.getUser();
-      if (error) {
-        console.error("Error fetching user data:", error);
-        navigate("/membership/login");
-      } else {
-        setUser({
-          user_metadata: {
-            full_name: userData.user.user_metadata.full_name,
-          },
-        });
+    const fetchUserData = async () => {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error("Error fetching user data:", userError);
+        navigate("/membership/login", { state: { status: "Please log in to access the dashboard." } });
+        return;
       }
-    };
 
-    const fetchProjects = async () => {
-      const { data, error } = await supabase
+      // Fetch user's membership and payment status
+      const { data: memberData, error: memberError } = await supabase
+        .from("members")
+        .select("membership_status, payment_status")
+        .eq("email", userData.user.email)
+        .single();
+
+      if (memberError) {
+        console.error("Error fetching membership data:", memberError);
+        navigate("/membership/login", { state: { status: "An error occurred. Please try again." } });
+        return;
+      }
+
+      // Check if the user is active
+      if (memberData.membership_status !== "active" || memberData.payment_status !== "approved") {
+        navigate("/membership/login", { state: { status: "Your account is inactive. Please complete your payment or contact support." } });
+        return;
+      }
+
+      // Set user data
+      setUser({
+        user_metadata: {
+          full_name: userData.user.user_metadata.full_name,
+        },
+      });
+
+      // Fetch projects
+      const { data: projectsData, error: projectsError } = await supabase
         .from("projects")
         .select("*")
         .limit(3);
-      if (error) {
-        console.error("Error fetching projects:", error);
+
+      if (projectsError) {
+        console.error("Error fetching projects:", projectsError);
       } else {
-        setProjects(data);
+        setProjects(projectsData);
       }
+
+      setLoading(false); // Data fetching is complete
     };
 
-    fetchUser();
-    fetchProjects();
+    fetchUserData();
   }, [navigate]);
+
+  // Show loading state while fetching data
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-lg font-medium text-gray-900">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">

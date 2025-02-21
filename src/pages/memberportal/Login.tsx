@@ -12,18 +12,6 @@ export function Login() {
   const [status, setStatus] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/memberportal/portaldashboard");
-      }
-    };
-
-    checkSession();
-  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,8 +64,9 @@ export function Login() {
         setStatus("Login successful!");
         navigate("/memberportal/portaldashboard");
       } else if (!memberData.transaction_id) {
-        setStatus("You will access the member portal after you make the membership payment. Pay. /memberportal/payment-processing ");
-        
+        setStatus(
+          'You will access the member portal after you make the membership payment. <a href="/memberportal/payment-page" class="text-blue-600 hover:text-blue-500">Complete your Payment</a>.'
+        );
       } else if (memberData.payment_status === "pending" || memberData.membership_status === "pending") {
         setStatus("You will be able to log in once your payment is verified.");
       } else {
@@ -105,7 +94,12 @@ export function Login() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {status && <p className="text-center text-red-600 mb-4">{status}</p>}
+          {status && (
+            <p
+              className="text-center text-red-600 mb-4"
+              dangerouslySetInnerHTML={{ __html: status }}
+            />
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label
