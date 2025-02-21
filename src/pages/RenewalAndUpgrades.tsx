@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 
@@ -12,6 +12,50 @@ const PaymentProcessing = () => {
   const [actionType, setActionType] = useState<"renew" | "upgrade">("renew"); // "renew" or "upgrade"
   const [membershipTier, setMembershipTier] = useState<string>(""); // "Student", "Associate", "Full Member"
   const navigate = useNavigate();
+
+  // Fetch user details from Supabase (or session) on component mount
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        // Get the current user session
+        const { data: user, error } = await supabase.auth.getUser();
+  
+        if (error) {
+          throw error;
+        }
+  
+        if (user) {
+          console.log("User ID:", user.user.id); // Log the user ID for debugging
+  
+          // Fetch user details from the `members` table
+          const { data: memberData, error: memberError } = await supabase
+            .from("members")
+            .select("full_name, phone_number")
+            .eq("id", user.user.id); // Temporarily remove `.single()`
+  
+          if (memberError) {
+            throw memberError;
+          }
+  
+          console.log("Member Data:", memberData); // Log the fetched data for debugging
+  
+          if (memberData && memberData.length > 0) {
+            // Populate full name and phone number
+            setFullName(memberData[0].full_name);
+            setPhoneNumber(memberData[0].phone_number);
+          } else {
+            console.error("No matching member found for the given ID.");
+            setStatus("No matching member found. Please contact support.");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+        setStatus("Error fetching user details. Please try again.");
+      }
+    };
+  
+    fetchUserDetails();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -121,23 +165,25 @@ const PaymentProcessing = () => {
               </div>
             </div>
 
-            {/* Membership Tier Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Select Membership Tier
-              </label>
-              <select
-                value={membershipTier}
-                onChange={(e) => setMembershipTier(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                required
-              >
-                <option value="">Select a tier</option>
-                <option value="Student">Student</option>
-                <option value="Associate">Associate</option>
-                <option value="Full Member">Full Member</option>
-              </select>
-            </div>
+            {/* Membership Tier Selection (Conditional Rendering) */}
+            {actionType === "upgrade" && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Select Membership Tier
+                </label>
+                <select
+                  value={membershipTier}
+                  onChange={(e) => setMembershipTier(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required={actionType === "upgrade"} // Required only for upgrade
+                >
+                  <option value="">Select a tier</option>
+                  <option value="Student">Student</option>
+                  <option value="Associate">Associate</option>
+                  <option value="Full Member">Full Member</option>
+                </select>
+              </div>
+            )}
 
             {/* M-Pesa Paybill Details */}
             <div>
@@ -160,7 +206,7 @@ const PaymentProcessing = () => {
               />
             </div>
 
-            {/* Full Name */}
+            {/* Full Name (Read-only) */}
             <div>
               <label
                 htmlFor="fullName"
@@ -173,13 +219,13 @@ const PaymentProcessing = () => {
                 name="fullName"
                 type="text"
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100"
+                value={fullName} // Pre-populated from user account
+                readOnly // Make the field read-only
               />
             </div>
 
-            {/* Phone Number */}
+            {/* Phone Number (Read-only) */}
             <div>
               <label
                 htmlFor="phoneNumber"
@@ -192,9 +238,9 @@ const PaymentProcessing = () => {
                 name="phoneNumber"
                 type="text"
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100"
+                value={phoneNumber} // Pre-populated from user account
+                readOnly // Make the field read-only
               />
             </div>
 
