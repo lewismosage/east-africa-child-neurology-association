@@ -56,7 +56,7 @@ const App = () => {
         <Route path="/membership/login" element={<Login />} />
         <Route path="/membership/become-a-member" element={<Membership />} />
         <Route path="/memberportal/register-form" element={<RegisterForm />} />
-        <Route path="/membership/member-portal" element={<Login />} />
+        <Route path="/membership/member-portal-&-login" element={<Login />} />
         <Route path="/memberportal/portaldashboard" element={<Dashboard />} />
         <Route path="/memberportal/mypublication" element={<MyPublication />} />
         <Route path="/about-us/our-leadership-team" element={<Leadership />} />

@@ -35,7 +35,7 @@ const Navbar = () => {
     "About Us": ["Our Organization", "Join Our Mission", "Our Leadership Team", "Support Our Cause"],
     Events: ["Upcoming Events", "Training Events", "Call for Abstracts"],
     Membership: [
-      "Member Portal",
+      "Member Portal & Login",
       "Become a Member",
       "EACNA Membership & Policies",
       "Renewal & Upgrade",

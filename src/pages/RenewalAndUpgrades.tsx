@@ -1,24 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
+import Modal from "react-modal"; 
+
+Modal.setAppElement("#root"); 
 
 const PaymentProcessing = () => {
   const [fullName, setFullName] = useState<string>("");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [transactionId, setTransactionId] = useState<string>("");
   const [status, setStatus] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
-  const [actionType, setActionType] = useState<"renew" | "upgrade">("renew"); // "renew" or "upgrade"
-  const [membershipTier, setMembershipTier] = useState<string>(""); // "Student", "Associate", "Full Member"
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); // Track if user is logged in
-  const navigate = useNavigate();
+  const [actionType, setActionType] = useState<"renew" | "upgrade">("renew");
+  const [membershipTier, setMembershipTier] = useState<string>("");
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [searchError, setSearchError] = useState<string>("");
+  const [recordFound, setRecordFound] = useState<boolean>(false);
 
-  // Fetch user details from Supabase (or session) on component mount
+  // Fetch user details if logged in
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        // Get the current user session
         const { data: user, error } = await supabase.auth.getUser();
 
         if (error) {
@@ -26,44 +31,69 @@ const PaymentProcessing = () => {
         }
 
         if (user) {
-          console.log("User ID:", user.user.id); // Log the user ID for debugging
-
-          // Fetch user details from the `members` table
           const { data: memberData, error: memberError } = await supabase
             .from("members")
-            .select("full_name, phone_number")
-            .eq("id", user.user.id); // Temporarily remove `.single()`
+            .select("full_name, phone_number, membership_tier")
+            .eq("id", user.user.id);
 
           if (memberError) {
             throw memberError;
           }
 
-          console.log("Member Data:", memberData); // Log the fetched data for debugging
-
           if (memberData && memberData.length > 0) {
-            // Populate full name and phone number
             setFullName(memberData[0].full_name);
             setPhoneNumber(memberData[0].phone_number);
-            setIsLoggedIn(true); // User is logged in
-          } else {
-            console.error("No matching member found for the given ID.");
-            setStatus("No matching member found. Please contact support.");
+            setMembershipTier(memberData[0].membership_tier);
+            setIsLoggedIn(true);
+            setRecordFound(true); // Auto-fill for logged-in users
           }
         }
       } catch (error) {
         console.error("Error fetching user details:", error);
-        setIsLoggedIn(false); // User is not logged in
+        setIsLoggedIn(false);
       }
     };
 
     fetchUserDetails();
   }, []);
 
+  const handleSearch = async () => {
+    setSearchLoading(true);
+    setSearchError("");
+
+    try {
+      const { data: memberData, error } = await supabase
+        .from("members")
+        .select("*")
+        .eq("full_name", fullName)
+        .eq("phone_number", phoneNumber)
+        .eq("email", email);
+
+      if (error) {
+        throw error;
+      }
+
+      if (memberData && memberData.length > 0) {
+        setFullName(memberData[0].full_name);
+        setPhoneNumber(memberData[0].phone_number);
+        setMembershipTier(memberData[0].membership_tier);
+        setRecordFound(true); // Record found, make fields uneditable
+        setIsModalOpen(false); // Close the modal after finding the record
+      } else {
+        setSearchError("No matching record found. Please check your details.");
+      }
+    } catch (error) {
+      console.error("Error searching for member:", error);
+      setSearchError("Error searching for member. Please try again.");
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
 
-    // Prevent duplicate submissions
     if (status === "PAYMENT UNDER VERIFICATION") {
       setLoading(false);
       return;
@@ -83,63 +113,26 @@ const PaymentProcessing = () => {
     }
 
     if (existingTransactions && existingTransactions.length > 0) {
-      setStatus(
-        "Transaction ID Already Submitted. The Transaction ID you entered has already been submitted and is currently under review. If this was a mistake, please check your details and try again. If you need assistance, please contact support."
-      );
+      setStatus("Transaction ID Already Submitted.");
       setLoading(false);
       return;
     }
 
     try {
-      if (isLoggedIn) {
-        // Update existing record for logged-in users
-        const { data, error } = await supabase
-          .from("members")
-          .update({
-            transaction_id: transactionId,
-            payment_status: "pending", // Set payment status to pending
-            membership_tier: membershipTier, // Include membership tier
-            action_type: actionType, // Include action type (renew/upgrade)
-          })
-          .eq("full_name", fullName) // Use full_name to identify the member
-          .eq("phone_number", phoneNumber); // Use phone_number to identify the member
+      // Update the member's record with the new transaction ID and payment status
+      const { error: updateError } = await supabase
+        .from("members")
+        .update({
+          transaction_id: transactionId,
+          payment_status: "pending",
+          membership_tier: actionType === "renew" ? membershipTier : membershipTier, // Use existing tier for renew, selected tier for upgrade
+          action_type: actionType,
+        })
+        .eq("full_name", fullName)
+        .eq("phone_number", phoneNumber);
 
-        if (error) {
-          throw error;
-        }
-      } else {
-        // For non-logged-in users, search for a matching record
-        const { data: memberData, error: searchError } = await supabase
-          .from("members")
-          .select("*")
-          .eq("full_name", fullName)
-          .eq("phone_number", phoneNumber);
-
-        if (searchError) {
-          throw searchError;
-        }
-
-        if (memberData && memberData.length > 0) {
-          // Update the existing record
-          const { error: updateError } = await supabase
-            .from("members")
-            .update({
-              transaction_id: transactionId,
-              payment_status: "pending", // Set payment status to pending
-              membership_tier: membershipTier, // Include membership tier
-              action_type: actionType, // Include action type (renew/upgrade)
-            })
-            .eq("id", memberData[0].id); // Use the ID of the matched record
-
-          if (updateError) {
-            throw updateError;
-          }
-        } else {
-          // No matching record found
-          setStatus("No matching member found. Please contact support.");
-          setLoading(false);
-          return;
-        }
+      if (updateError) {
+        throw updateError;
       }
 
       setStatus("PAYMENT UNDER VERIFICATION");
@@ -172,6 +165,16 @@ const PaymentProcessing = () => {
             <p className={`text-center mb-4 ${status === "PAYMENT UNDER VERIFICATION" ? "text-green-600" : "text-red-600"}`}>
               {status}
             </p>
+          )}
+          {!isLoggedIn && !recordFound && (
+            <div className="mb-4">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Find my record
+              </button>
+            </div>
           )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Action Type (Renew or Upgrade) */}
@@ -215,7 +218,7 @@ const PaymentProcessing = () => {
                   value={membershipTier}
                   onChange={(e) => setMembershipTier(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required={actionType === "upgrade"} // Required only for upgrade
+                  required={actionType === "upgrade"}
                 >
                   <option value="">Select a tier</option>
                   <option value="Student">Student</option>
@@ -224,27 +227,6 @@ const PaymentProcessing = () => {
                 </select>
               </div>
             )}
-
-            {/* M-Pesa Paybill Details */}
-            <div>
-              <p className="text-sm font-medium text-gray-700 text-center">
-                ACCOUNT DETAILS
-              </p>
-              <label
-                htmlFor="paybill"
-                className="block text-sm font-medium text-gray-700"
-              >
-                M-Pesa Paybill
-              </label>
-              <textarea
-                id="paybill"
-                name="paybill"
-                value={"PAYBILL-12345\nACCOUNT NUMBER 12345"}
-                readOnly
-                rows={2}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
 
             {/* Full Name */}
             <div>
@@ -259,12 +241,9 @@ const PaymentProcessing = () => {
                 name="fullName"
                 type="text"
                 required
-                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                  isLoggedIn ? "bg-gray-100" : ""
-                }`}
-                value={fullName} // Pre-populated from user account
-                readOnly={isLoggedIn} // Make the field read-only if logged in
-                onChange={(e) => setFullName(e.target.value)} // Allow editing if not logged in
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100"
+                value={fullName}
+                readOnly={isLoggedIn || recordFound} // Read-only for logged-in users or after record is found
               />
             </div>
 
@@ -281,12 +260,9 @@ const PaymentProcessing = () => {
                 name="phoneNumber"
                 type="text"
                 required
-                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                  isLoggedIn ? "bg-gray-100" : ""
-                }`}
-                value={phoneNumber} // Pre-populated from user account
-                readOnly={isLoggedIn} // Make the field read-only if logged in
-                onChange={(e) => setPhoneNumber(e.target.value)} // Allow editing if not logged in
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100"
+                value={phoneNumber}
+                readOnly={isLoggedIn || recordFound} // Read-only for logged-in users or after record is found
               />
             </div>
 
@@ -316,7 +292,7 @@ const PaymentProcessing = () => {
                 className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
                   submitted ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"
                 } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
-                disabled={loading}
+                disabled={loading || !recordFound} // Disable if no record is found
               >
                 {loading ? "Submitting..." : submitted ? "Submitted" : "Submit Payment"}
               </button>
@@ -324,6 +300,71 @@ const PaymentProcessing = () => {
           </form>
         </div>
       </div>
+
+      {/* Pop-up Modal for Finding Records */}
+      <Modal
+        isOpen={isModalOpen}
+        onRequestClose={() => setIsModalOpen(false)}
+        contentLabel="Find My Record"
+        className="modal"
+        overlayClassName="modal-overlay"
+      >
+        <h2 className="text-xl font-bold mb-4">Find My Record</h2>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSearch();
+          }}
+          className="space-y-4"
+        >
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Full Name
+            </label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Phone Number
+            </label>
+            <input
+              type="text"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+          {searchError && (
+            <p className="text-red-600 text-sm text-center">{searchError}</p>
+          )}
+          <button
+            type="submit"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            disabled={searchLoading}
+          >
+            {searchLoading ? "Searching..." : "Find My Record"}
+          </button>
+        </form>
+      </Modal>
     </div>
   );
 };
