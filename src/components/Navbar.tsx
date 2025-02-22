@@ -32,15 +32,15 @@ const Navbar = () => {
   };
 
   const navigation = {
-    "About Us": ["Our Organization", "Join Our Mission", "Leadership", "Support Our Cause"],
+    "About Us": ["Our Organization", "Join Our Mission", "Our Leadership Team", "Support Our Cause"],
     Events: ["Upcoming Events", "Training Events", "Call for Abstracts"],
     Membership: [
       "Member Portal",
       "Become a Member",
-      "EACNA Policies",
+      "EACNA Membership & Policies",
       "Renewal & Upgrade",
     ],
-    Publication: ["Resources", "Articles & Research"],
+    Publication: ["Healthcare Policies & Guidelines", "Research & Publications"],
     "Media Center": ["News And Newsletters", "FAQs"],
   };
 

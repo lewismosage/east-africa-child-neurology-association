@@ -9,7 +9,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-//import { supabase } from "../../supabaseClient";
+import { supabase } from "../../supabaseClient";
 
 const Research = () => {
   interface Article {
@@ -88,10 +88,10 @@ const Research = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-white mb-6">
-            Articles & Research
+            Research & Publications
             </h1>
             <p className="text-xl text-blue-100 max-w-2xl mx-auto mb-8">
-              Explore and contribute to the latest research in child neurology
+              Explore the latest research & publications in child neurology
               across East Africa
             </p>
             <div className="max-w-xl mx-auto relative">

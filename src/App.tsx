@@ -48,8 +48,8 @@ const App = () => {
         <Route path="/events/upcoming-events" element={<Upcomingevents />} />
         <Route path="/events/training-events" element={<Trainingevents />} />
         <Route path="/events/call-for-abstracts" element={<CallForAbstracts />} />
-        <Route path="/publication/resources" element={<Resources />} />
-        <Route path="/publication/articles-&-research" element={<ArticlesAndResearch />} /> 
+        <Route path="/publication/healthcare-policies-&-guidelines" element={<Resources />} />
+        <Route path="publication/research-&-publications" element={<ArticlesAndResearch />} /> 
         <Route path="/find-specialist" element={<FindSpecialist />} />
         <Route path="/approach" element={<Approach />} />
         <Route path="/login" element={<Login />} />
@@ -59,13 +59,13 @@ const App = () => {
         <Route path="/membership/member-portal" element={<Login />} />
         <Route path="/memberportal/portaldashboard" element={<Dashboard />} />
         <Route path="/memberportal/mypublication" element={<MyPublication />} />
-        <Route path="/about-us/leadership" element={<Leadership />} />
+        <Route path="/about-us/our-leadership-team" element={<Leadership />} />
         <Route path="/about-us/our-organization" element={<OurOrganization />} />
         <Route path="/about-us/join-our-mission" element={<JoinMission />} />
         <Route path="/about-us/support-our-cause" element={<SupportOurCause />} />
         <Route path="/memberportal/account-management" element={<AccountManagement />} />
         <Route path="/memberportal/payment-processing" element={<PaymentProcessing />} />
-        <Route path="/membership/eacna-policies" element={<EACNAPolicies />} />
+        <Route path="/membership/eacna-membership-&-policies" element={<EACNAPolicies />} />
         <Route path="/membership/renewal-&-upgrade" element={<RenewalAndUpgrades />} />
         <Route path="/media-center/faqs" element={<FAQs />} />
         <Route path="media-center/news-and-newsletters" element={<NewsAndNewsletters />} />
