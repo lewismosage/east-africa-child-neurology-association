@@ -24,6 +24,7 @@ import AccountManagement from "./pages/memberportal/AccountManagement";
 import PaymentProcessing from "./pages/memberportal/PaymentProcessing";
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { ManageResources } from './pages/admin/ManageResources';
+import ArtclesApproval from './pages/admin/ArticlesApproval';
 import { ManageEvents } from './pages/admin/ManageEvents';
 import { RequireAuth } from './components/admin/RequireAuth';
 import { AdminLogin } from './pages/admin/AdminLogin';
@@ -89,7 +90,8 @@ const App = () => {
               <AdminLayout />
             </RequireAuth>
           }
-        >
+        >  
+          <Route path="artcles-approval" element={<ArtclesApproval />} />
           <Route path="resources" element={<ManageResources />} />
           <Route path="events" element={<ManageEvents />} />
           <Route path="payment-verification" element={<PaymentVerification />} />

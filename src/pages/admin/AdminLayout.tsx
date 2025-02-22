@@ -7,6 +7,7 @@ const sidebarItems = [
   { icon: FileText, label: "Manage Resources", path: "/admin/resources" },
   { icon: Calendar, label: "Manage Events", path: "/admin/events" },
   { icon: CreditCard, label: "Payment Processing", path: "/admin/payment-verification" },
+  { icon: FileText, label: "Articles & Publications Moderation", path: "/admin/artcles-approval" },
 ];
 
 export function AdminLayout() {

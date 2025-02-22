@@ -3,7 +3,6 @@ import React, { useState } from "react";
 const FindSpecialist = () => {
   const [location, setLocation] = useState("All Countries");
   const [specialization, setSpecialization] = useState("All Specializations");
-  const [city, setCity] = useState("");
 
   const specialists = [
     {
@@ -56,15 +55,8 @@ const FindSpecialist = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
-            <input
-              type="text"
-              placeholder="Enter city name"
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-300 focus:ring-opacity-50"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-            />
           </div>
+          
         </div>
         <div className="mt-6">
           <button className="bg-purple-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-purple-700 transition duration-200">

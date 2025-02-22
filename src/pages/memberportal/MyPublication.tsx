@@ -8,7 +8,6 @@ import {
   Tag,
   ExternalLink,
   Edit,
-  Trash,
   Share,
 } from "lucide-react";
 import { EditorContent, useEditor } from "@tiptap/react";
@@ -36,6 +35,7 @@ const MyPublications = () => {
     tags?: string[];
     file_url?: string;
     type: string;
+    status: string; // Add status field
   }
 
   interface User {
@@ -102,8 +102,9 @@ const MyPublications = () => {
         file_url: file ? file.name : null,
         author: user?.user_metadata.full_name || "Unknown",
         publishedAt: new Date().toISOString(),
-        type: "research", // Set the type field
-        tags: [], // Initialize tags as an empty array
+        type: "research",
+        tags: [],
+        status: "draft", // Default status for new projects
       },
     ]);
 
@@ -117,6 +118,7 @@ const MyPublications = () => {
       setContent("");
       setFile(null);
       editor?.commands.clearContent();
+      setShowEditor(false); // Close the editor after submission
       if (data) {
         setProjects([...projects, data[0]]);
       }
@@ -170,50 +172,29 @@ const MyPublications = () => {
     }
   };
 
-  const handleDelete = async (projectId: number) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this project? This action cannot be undone."
-    );
-
-    if (!confirmDelete) return;
-
-    const { error: projectError } = await supabase
-      .from("projects")
-      .delete()
-      .eq("id", projectId);
-
-    const { error: researchError } = await supabase
-      .from("research")
-      .delete()
-      .eq("id", projectId);
-
-    if (projectError || researchError) {
-      console.error("Error deleting project:", projectError || researchError);
-    } else {
-      setProjects(projects.filter((project) => project.id !== projectId));
-    }
-  };
-
   const handleShare = async (project: Project) => {
-    const { data, error } = await supabase.from("research").insert([
-      {
-        title: project.title,
-        category: project.category,
-        content: project.content,
-        author: project.author || user?.user_metadata.full_name || "Unknown",
-        publishedAt: project.publishedAt || new Date().toISOString(),
-        tags: project.tags || [], 
-        file_url: project.file_url,
-        type: project.type || "research",
-      },
-    ]);
+    const { data, error } = await supabase
+      .from("projects")
+      .update({ status: "pending" }) // Set status to "pending"
+      .eq("id", project.id);
 
     if (error) {
       console.error("Error sharing project:", error);
       setShareStatus(`Failed to share the project: ${error.message}`);
     } else {
-      setShareStatus("Shared to Articles & Resources!");
+      setShareStatus("Your article is under review");
+      setProjects(
+        projects.map((p) =>
+          p.id === project.id ? { ...p, status: "pending" } : p
+        )
+      );
     }
+  };
+
+  // Helper function to truncate content to the first two lines
+  const truncateContent = (content: string) => {
+    const lines = content.split("\n");
+    return lines.slice(0, 2).join("\n");
   };
 
   return (
@@ -221,7 +202,7 @@ const MyPublications = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-          My Articles & Publications
+            My Articles & Publications
           </h2>
           <button
             onClick={() => setShowEditor(true)}
@@ -231,6 +212,7 @@ const MyPublications = () => {
           </button>
         </div>
 
+        {/* Editor Form */}
         {showEditor && (
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <form onSubmit={selectedProject ? handleUpdate : handleSubmit}>
@@ -304,36 +286,6 @@ const MyPublications = () => {
                 />
               </div>
 
-              <div className="mb-4">
-                <label
-                  htmlFor="links"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Attach Links
-                </label>
-                <input
-                  id="links"
-                  name="links"
-                  type="text"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label
-                  htmlFor="videos"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Embed Videos (YouTube, Vimeo)
-                </label>
-                <input
-                  id="videos"
-                  name="videos"
-                  type="text"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
               <div className="flex justify-end">
                 <button
                   type="submit"
@@ -349,7 +301,7 @@ const MyPublications = () => {
           </div>
         )}
 
-        {/* Display projects here */}
+        {/* Project Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((project) => (
             <div
@@ -357,36 +309,30 @@ const MyPublications = () => {
               className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
             >
               <div className="p-6">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <FileText className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div className="ml-4">
-                    <span className="text-sm font-medium text-blue-600">
-                      {project.category}
-                    </span>
-                  </div>
-                </div>
+                {/* Display the category */}
+                <span className="text-sm font-medium text-blue-600">
+                  {project.category}
+                </span>
+
+                {/* Display the title */}
                 <h3 className="text-xl font-semibold mb-2">{project.title}</h3>
-                <p className="text-gray-600 mb-4">{project.content}</p>
+
+                {/* Display the first two lines of the content */}
+                <p className="text-gray-600 mb-4">
+                  {truncateContent(project.content)}
+                </p>
+
+                {/* Display the author and publication date */}
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <Users className="h-4 w-4 mr-1" />
                   <span>{project.author}</span>
                   <span className="mx-2">•</span>
-                  <span>{project.publishedAt}</span>
+                  <span>
+                    {new Date(project.publishedAt).toLocaleDateString()}
+                  </span>
                 </div>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {project.tags &&
-                    project.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
-                      >
-                        <Tag className="h-4 w-4 mr-1" />
-                        {tag}
-                      </span>
-                    ))}
-                </div>
+
+                {/* Action buttons */}
                 <div className="flex justify-end space-x-2">
                   <button
                     onClick={() => handleEdit(project)}
@@ -396,23 +342,44 @@ const MyPublications = () => {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(project.id)}
-                    className="inline-flex items-center text-red-600 hover:text-red-700"
-                  >
-                    <Trash className="h-5 w-5 mr-2" />
-                    Delete
-                  </button>
-                  <button
                     onClick={() => handleShare(project)}
-                    className="inline-flex items-center text-green-600 hover:text-green-700"
+                    className={`inline-flex items-center ${
+                      project.status === "pending"
+                        ? "text-yellow-600 hover:text-yellow-700"
+                        : project.status === "approved"
+                        ? "text-green-600 hover:text-green-700"
+                        : "text-green-600 hover:text-green-700"
+                    }`}
+                    disabled={project.status === "pending" || project.status === "approved"}
                   >
-                    <Share className="h-5 w-5 mr-2" />
-                    Share
+                    {project.status === "pending" ? (
+                      <>
+                        <Share className="h-5 w-5 mr-2" />
+                        Pending Approval
+                      </>
+                    ) : project.status === "approved" ? (
+                      <>
+                        <Share className="h-5 w-5 mr-2" />
+                        Approved
+                      </>
+                    ) : (
+                      <>
+                        <Share className="h-5 w-5 mr-2" />
+                        Share
+                      </>
+                    )}
                   </button>
                 </div>
-                {shareStatus && (
+
+                {/* Status messages */}
+                {project.status === "pending" && (
+                  <p className="mt-4 text-center text-yellow-600">
+                    Your article is under review
+                  </p>
+                )}
+                {project.status === "approved" && (
                   <p className="mt-4 text-center text-green-600">
-                    {shareStatus}
+                    Your article has been approved
                   </p>
                 )}
               </div>
