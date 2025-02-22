@@ -117,7 +117,7 @@ const EACNAPolicies = () => {
             📍 EACNA Membership Services
           </p>
           <p className="text-gray-700 mb-4">
-            📍 [Insert EACNA Office Address]
+            📍 5 th Ngong Avenue, 5 th Avenue Suites, 6 th Floor, Suite 8, Nairobi
           </p>
           <ul className="list-disc list-inside text-gray-700 mb-4">
             <li>Applications are processed within 5 business days.</li>

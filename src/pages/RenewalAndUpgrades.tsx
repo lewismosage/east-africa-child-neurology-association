@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../supabaseClient";
-import Modal from "react-modal"; 
+import Modal from "react-modal";
 
-Modal.setAppElement("#root"); 
+Modal.setAppElement("#root");
 
 const PaymentProcessing = () => {
   const [fullName, setFullName] = useState<string>("");
@@ -62,12 +62,11 @@ const PaymentProcessing = () => {
     setSearchError("");
 
     try {
+      // Search for records using any of the fields (name, phone, or email)
       const { data: memberData, error } = await supabase
         .from("members")
         .select("*")
-        .eq("full_name", fullName)
-        .eq("phone_number", phoneNumber)
-        .eq("email", email);
+        .or(`full_name.eq.${fullName},phone_number.eq.${phoneNumber},email.eq.${email}`);
 
       if (error) {
         throw error;
@@ -208,7 +207,22 @@ const PaymentProcessing = () => {
               </div>
             </div>
 
-            {/* Membership Tier Selection (Conditional Rendering) */}
+            {/* Membership Tier Input for Renewals */}
+            {actionType === "renew" && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Membership Tier
+                </label>
+                <input
+                  type="text"
+                  value={membershipTier}
+                  readOnly
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100"
+                />
+              </div>
+            )}
+
+            {/* Membership Tier Selection for Upgrades */}
             {actionType === "upgrade" && (
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -326,7 +340,6 @@ const PaymentProcessing = () => {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
             />
           </div>
           <div>
@@ -338,7 +351,6 @@ const PaymentProcessing = () => {
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
             />
           </div>
           <div>
@@ -350,7 +362,6 @@ const PaymentProcessing = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
             />
           </div>
           {searchError && (
