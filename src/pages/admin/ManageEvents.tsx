@@ -48,6 +48,8 @@ export function ManageEvents() {
     registrationUrl: ''
   });
 
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'training'>('upcoming');
+
   const handleEdit = (event: Event) => {
     setEditingEvent(event);
     setFormData(event);
@@ -82,10 +84,42 @@ export function ManageEvents() {
     });
   };
 
+  const filteredEvents = events.filter(event => 
+    activeTab === 'upcoming' ? !event.isPast : event.type === 'training'
+  );
+
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Manage Events</h1>
+      </div>
+
+      {/* Tabs for Upcoming Events and Training Events */}
+      <div className="flex space-x-4 mb-8">
+        <button
+          onClick={() => setActiveTab('upcoming')}
+          className={`px-4 py-2 rounded-lg ${
+            activeTab === 'upcoming'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Upcoming Events
+        </button>
+        <button
+          onClick={() => setActiveTab('training')}
+          className={`px-4 py-2 rounded-lg ${
+            activeTab === 'training'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Training Events
+        </button>
+      </div>
+
+      {/* Add Event Button */}
+      <div className="mb-8">
         <button
           onClick={() => {
             setEditingEvent(null);
@@ -107,8 +141,9 @@ export function ManageEvents() {
         </button>
       </div>
 
+      {/* Event List */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {events.map((event) => (
+        {filteredEvents.map((event) => (
           <div
             key={event.id}
             className={`bg-white rounded-lg shadow-md p-6 ${
@@ -246,18 +281,6 @@ export function ManageEvents() {
                   onChange={(e) => setFormData({ ...formData, registrationUrl: e.target.value })}
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="isPast"
-                  checked={formData.isPast}
-                  onChange={(e) => setFormData({ ...formData, isPast: e.target.checked })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="isPast" className="ml-2 block text-sm text-gray-900">
-                  Mark as past event
-                </label>
               </div>
               <div className="flex justify-end space-x-4 mt-6">
                 <button

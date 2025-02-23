@@ -11,7 +11,7 @@ interface Project {
   tags?: string[];
   file_url?: string;
   type: string;
-  status: string; // "pending", "approved", "rejected"
+  status: string; // "pending", "approved", "rejected", "draft"
 }
 
 const ArticlesApproval = () => {
@@ -21,31 +21,32 @@ const ArticlesApproval = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null); // Track selected project for modal
   const [isModalOpen, setIsModalOpen] = useState(false); // Control modal visibility
 
-  // Fetch projects on component mount
+  // Fetch shared projects on component mount
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchSharedProjects = async () => {
       try {
-        // Fetch all projects, sorted by publishedAt in descending order
+        // Fetch only shared projects (status is not "draft")
         const { data, error } = await supabase
           .from("projects")
           .select("*")
+          .neq("status", "draft") // Exclude drafts
           .order("publishedAt", { ascending: false });
 
         if (error) {
           throw error;
         }
 
-        console.log("Fetched projects:", data);
+        console.log("Fetched shared projects:", data);
         setProjects(data as Project[]);
       } catch (error) {
-        console.error("Error fetching projects:", error);
-        setError("Error fetching projects. Please try again.");
+        console.error("Error fetching shared projects:", error);
+        setError("Error fetching shared projects. Please try again.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProjects();
+    fetchSharedProjects();
 
     // Set up real-time subscription for changes to the `projects` table
     const projectsSubscription = supabase
@@ -57,16 +58,25 @@ const ArticlesApproval = () => {
           console.log("Real-time update:", payload);
           if (payload.eventType === "INSERT") {
             const newProject = payload.new as Project;
-            // Add new project to the top of the list
-            setProjects((prevProjects) => [newProject, ...prevProjects]);
+            // Add new project to the top of the list only if it's shared
+            if (newProject.status !== "draft") {
+              setProjects((prevProjects) => [newProject, ...prevProjects]);
+            }
           } else if (payload.eventType === "UPDATE") {
             const updatedProject = payload.new as Project;
-            // Update the project in the list
-            setProjects((prevProjects) =>
-              prevProjects.map((project) =>
-                project.id === updatedProject.id ? updatedProject : project
-              )
-            );
+            // Update the project in the list only if it's shared
+            if (updatedProject.status !== "draft") {
+              setProjects((prevProjects) =>
+                prevProjects.map((project) =>
+                  project.id === updatedProject.id ? updatedProject : project
+                )
+              );
+            } else {
+              // Remove the project if it's updated to "draft"
+              setProjects((prevProjects) =>
+                prevProjects.filter((project) => project.id !== updatedProject.id)
+              );
+            }
           } else if (payload.eventType === "DELETE") {
             const deletedProject = payload.old as Project;
             // Remove the deleted project from the list
