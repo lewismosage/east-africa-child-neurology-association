@@ -29,19 +29,30 @@ const Research = () => {
 
   useEffect(() => {
     const fetchArticles = async () => {
-      const { data, error } = await supabase.from("research").select("*");
+      // Fetch only approved projects
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("status", "approved"); // Filter by status = "approved"
+
       if (error) {
         console.error("Error fetching articles:", error);
       } else {
+        // Map the fetched data to the Article interface
         const formattedData = data.map((article) => ({
-          ...article,
+          id: article.id.toString(), // Ensure ID is a string
+          title: article.title,
+          content: article.content,
+          author: article.author,
           publishedAt: article.publishedAt
             ? new Date(article.publishedAt).toLocaleDateString()
             : "N/A", // Handle null case
+          type: article.type || "research", // Default to "research" if type is missing
           tags:
             typeof article.tags === "string"
               ? JSON.parse(article.tags)
-              : article.tags || [],
+              : article.tags || [], // Parse tags if they are stored as a string
+          category: article.category || "Uncategorized", // Default to "Uncategorized" if category is missing
         }));
         setArticles(formattedData as Article[]);
       }
@@ -50,6 +61,7 @@ const Research = () => {
     fetchArticles();
   }, []);
 
+  // Filter articles based on selected category and search query
   const filteredArticles = articles.filter((article) => {
     const matchesCategory =
       selectedCategory === "All" || article.category === selectedCategory;
@@ -59,6 +71,7 @@ const Research = () => {
     return matchesCategory && matchesSearch;
   });
 
+  // Get the appropriate icon based on the article type
   const getIcon = (type: string) => {
     switch (type) {
       case "research":
@@ -72,6 +85,7 @@ const Research = () => {
     }
   };
 
+  // List of categories for filtering
   const categories = [
     "All",
     "Clinical Research",
@@ -88,7 +102,7 @@ const Research = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-white mb-6">
-            Research & Publications
+              Research & Publications
             </h1>
             <p className="text-xl text-blue-100 max-w-2xl mx-auto mb-8">
               Explore the latest research & publications in child neurology

@@ -13,6 +13,7 @@ const quickAccessLinks = [
 ];
 
 interface User {
+  id: string; // Add user ID
   user_metadata: {
     full_name: string;
   };
@@ -22,13 +23,14 @@ interface Project {
   title: string;
   status: string;
   deadline: string;
+  user_id: string; // Add user_id to Project interface
 }
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [showLibrary, setShowLibrary] = useState(false);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,16 +71,17 @@ const Dashboard = () => {
 
         // Set user data
         setUser({
+          id: userData.user.id, // Include user ID
           user_metadata: {
             full_name: userData.user.user_metadata.full_name,
           },
         });
 
-        // Fetch projects
+        // Fetch projects for the logged-in user
         const { data: projectsData, error: projectsError } = await supabase
           .from("projects")
           .select("*")
-          .limit(3);
+          .eq("user_id", userData.user.id); // Filter by user_id
 
         if (projectsError) {
           console.error("Error fetching projects:", projectsError);
@@ -171,7 +174,7 @@ const Dashboard = () => {
                     </div>
                   ))
                 ) : (
-                  <div className="text-gray-500">No projects available</div>
+                  <div className="text-gray-500">No Articles Available</div>
                 )}
               </div>
             </div>
@@ -278,7 +281,7 @@ const Dashboard = () => {
         {/* Research Container */}
         <div className="mt-8">
           <a
-            href="/publication/articles-&-research"
+            href="/publication/research-&-publications"
             className="block bg-blue-600 text-white text-center py-4 rounded-lg shadow hover:bg-blue-700 transition-colors"
           >
             Go to Articles & Resources

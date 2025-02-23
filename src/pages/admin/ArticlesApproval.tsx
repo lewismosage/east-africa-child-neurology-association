@@ -21,15 +21,15 @@ const ArticlesApproval = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null); // Track selected project for modal
   const [isModalOpen, setIsModalOpen] = useState(false); // Control modal visibility
 
+  // Fetch projects on component mount
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        // Fetch projects with a status of "pending"
+        // Fetch all projects, sorted by publishedAt in descending order
         const { data, error } = await supabase
           .from("projects")
           .select("*")
-          .eq("status", "pending") // Only fetch pending projects
-          .order("publishedAt", { ascending: false }); // Sort by publication date
+          .order("publishedAt", { ascending: false });
 
         if (error) {
           throw error;
@@ -57,11 +57,11 @@ const ArticlesApproval = () => {
           console.log("Real-time update:", payload);
           if (payload.eventType === "INSERT") {
             const newProject = payload.new as Project;
-            if (newProject.status === "pending") {
-              setProjects((prevProjects) => [newProject, ...prevProjects]);
-            }
+            // Add new project to the top of the list
+            setProjects((prevProjects) => [newProject, ...prevProjects]);
           } else if (payload.eventType === "UPDATE") {
             const updatedProject = payload.new as Project;
+            // Update the project in the list
             setProjects((prevProjects) =>
               prevProjects.map((project) =>
                 project.id === updatedProject.id ? updatedProject : project
@@ -69,6 +69,7 @@ const ArticlesApproval = () => {
             );
           } else if (payload.eventType === "DELETE") {
             const deletedProject = payload.old as Project;
+            // Remove the deleted project from the list
             setProjects((prevProjects) =>
               prevProjects.filter((project) => project.id !== deletedProject.id)
             );
@@ -77,6 +78,7 @@ const ArticlesApproval = () => {
       )
       .subscribe();
 
+    // Cleanup subscription on component unmount
     return () => {
       supabase.removeChannel(projectsSubscription);
     };
