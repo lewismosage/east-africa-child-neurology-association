@@ -114,6 +114,20 @@ export function ManageEvents() {
     }
   });
 
+  // Open modal and set form data based on the active tab
+  const openModal = () => {
+    setEditingEvent(null);
+    setFormData({
+      title: '',
+      date: '',
+      location: '',
+      description: '',
+      type: activeTab === 'training' ? 'training' : 'conference', // Set type based on active tab
+      registration_url: '',
+    });
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
@@ -147,18 +161,7 @@ export function ManageEvents() {
       {/* Add Event Button */}
       <div className="mb-8">
         <button
-          onClick={() => {
-            setEditingEvent(null);
-            setFormData({
-              title: '',
-              date: '',
-              location: '',
-              description: '',
-              type: 'conference',
-              registration_url: '',
-            });
-            setIsModalOpen(true);
-          }}
+          onClick={openModal}
           className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="h-5 w-5 mr-2" />
@@ -287,17 +290,27 @@ export function ManageEvents() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Type
                 </label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value as 'conference' | 'workshop' | 'seminar' | 'training' | 'other' })}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                >
-                  <option value="conference">Conference</option>
-                  <option value="workshop">Workshop</option>
-                  <option value="seminar">Seminar</option>
-                  <option value="training">Training</option>
-                  <option value="other">Other</option>
-                </select>
+                {activeTab === 'training' ? (
+                  // Display a non-editable input for training events
+                  <input
+                    type="text"
+                    value="Training"
+                    readOnly
+                    className="w-full rounded-md border-gray-300 shadow-sm bg-gray-100 cursor-not-allowed"
+                  />
+                ) : (
+                  // Display a dropdown for upcoming events
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value as 'conference' | 'workshop' | 'seminar' | 'training' | 'other' })}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  >
+                    <option value="conference">Conference</option>
+                    <option value="workshop">Workshop</option>
+                    <option value="seminar">Seminar</option>
+                    <option value="other">Other</option>
+                  </select>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
