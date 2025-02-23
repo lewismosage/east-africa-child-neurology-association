@@ -4,8 +4,8 @@ import { Facebook, Twitter, Linkedin, Mail } from 'lucide-react';
 export function Footer() {
   const navigation = {
     main: [
-      { name: 'About', href: '/about' },
-      { name: 'Resources', href: '/publication/resources' },
+      { name: 'About', href: 'about-us/our-organization' },
+      { name: 'Research & Publications', href: 'publication/research-&-publications' },
       { name: 'Events', href: '/events/upcoming-events' },
       { name: 'Contact', href: '/contact' },
       { name: 'Member Portal', href: '/membership/login' },

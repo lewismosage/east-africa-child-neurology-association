@@ -1,45 +1,87 @@
-import React, { useState } from "react";
-import { Calendar } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Calendar, ExternalLink } from "lucide-react";
+import { supabase } from "../../supabaseClient"; 
 
-const events = [
-  {
-    id: 1,
-    title: "Annual EACNA Conference 2024",
-    date: "March 15-17, 2024",
-    location: "Nairobi, Kenya",
-    description: "Join us for the largest gathering of child neurologists in East Africa.",
-    fullContent:
-      "The Annual EACNA Conference 2024 is the premier event for child neurologists in East Africa. This year's conference will feature keynote presentations from leading experts, interactive workshops, and networking opportunities. Topics will include advances in epilepsy treatment, neurodevelopmental disorders, and innovative approaches to neurological care in resource-limited settings.",
-    type: "Conference",
-  },
-  {
-    id: 2,
-    title: "Pediatric Epilepsy Workshop",
-    date: "April 5, 2024",
-    location: "Dar es Salaam, Tanzania",
-    description: "Intensive workshop on managing pediatric epilepsy cases.",
-    fullContent:
-      "This workshop is designed for healthcare professionals who manage pediatric epilepsy cases. It will cover the latest diagnostic techniques, treatment protocols, and case management strategies. Participants will have the opportunity to engage in hands-on training and case discussions with experts in the field.",
-    type: "Workshop",
-  },
-  {
-    id: 3,
-    title: "Research Symposium",
-    date: "May 20, 2024",
-    location: "Kampala, Uganda",
-    description: "Presenting latest research in child neurology.",
-    fullContent:
-      "The Research Symposium 2024 will showcase cutting-edge research in child neurology. Researchers from across East Africa will present their findings on topics such as neuroimaging, genetic disorders, and neonatal neurology. The symposium will also include panel discussions and opportunities for collaboration.",
-    type: "Symposium",
-  },
-];
+interface Event {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  description: string;
+  type: string; // e.g., "Conference", "Workshop", "Symposium"
+  registration_url?: string; // Optional field for registration URL
+}
 
 const EventsPage = () => {
-  // State to track expanded events
-  const [expandedEvent, setExpandedEvent] = useState<{ [key: number]: boolean }>({});
+  const [events, setEvents] = useState<Event[]>([]);
+  const [expandedEvent, setExpandedEvent] = useState<{ [key: string]: boolean }>({});
+
+  // Fetch upcoming events from Supabase (excluding training events)
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .neq("type", "training") // Exclude training events
+        .gte("date", new Date().toISOString()) // Only fetch upcoming events
+        .order("date", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching events:", error);
+      } else {
+        setEvents(data || []);
+      }
+    };
+
+    fetchEvents();
+
+    // Set up real-time subscription for changes to the events table
+    const eventsSubscription = supabase
+      .channel("public:events")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "events" },
+        (payload) => {
+          console.log("Real-time update:", payload);
+          if (payload.eventType === "INSERT") {
+            // Add new event to the list if it's an upcoming event and not a training event
+            const newEvent = payload.new as Event;
+            if (newEvent.type !== "training" && new Date(newEvent.date) >= new Date()) {
+              setEvents((prevEvents) => [newEvent, ...prevEvents]);
+            }
+          } else if (payload.eventType === "UPDATE") {
+            // Update existing event in the list if it's an upcoming event and not a training event
+            const updatedEvent = payload.new as Event;
+            if (updatedEvent.type !== "training" && new Date(updatedEvent.date) >= new Date()) {
+              setEvents((prevEvents) =>
+                prevEvents.map((event) =>
+                  event.id === updatedEvent.id ? updatedEvent : event
+                )
+              );
+            } else {
+              // Remove the event if it's no longer an upcoming event or is a training event
+              setEvents((prevEvents) =>
+                prevEvents.filter((event) => event.id !== updatedEvent.id)
+              );
+            }
+          } else if (payload.eventType === "DELETE") {
+            // Remove deleted event from the list
+            setEvents((prevEvents) =>
+              prevEvents.filter((event) => event.id !== payload.old.id)
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on component unmount
+    return () => {
+      supabase.removeChannel(eventsSubscription);
+    };
+  }, []);
 
   // Toggle full content for events
-  const toggleEvent = (id: number) => {
+  const toggleEvent = (id: string) => {
     setExpandedEvent((prev) => ({
       ...prev,
       [id]: !prev[id],
@@ -69,18 +111,35 @@ const EventsPage = () => {
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{event.title}</h3>
                 <div className="text-sm text-gray-500 mb-4">
-                  <p>{event.date}</p>
+                  <p>{new Date(event.date).toLocaleDateString()}</p>
                   <p>{event.location}</p>
                 </div>
-                <p className="text-gray-600 mb-4">
-                  {expandedEvent[event.id] ? event.fullContent : event.description}
-                </p>
-                <button
-                  onClick={() => toggleEvent(event.id)}
-                  className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-md transition-colors"
+                <p
+                  className={`text-gray-600 mb-4 ${
+                    expandedEvent[event.id] ? "" : "line-clamp-3"
+                  }`}
                 >
-                  {expandedEvent[event.id] ? "Show Less" : "Learn More"}
-                </button>
+                  {event.description}
+                </p>
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => toggleEvent(event.id)}
+                    className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-md transition-colors"
+                  >
+                    {expandedEvent[event.id] ? "Show Less" : "Learn More"}
+                  </button>
+                  {event.registration_url && (
+                    <a
+                      href={event.registration_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Register
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           ))}

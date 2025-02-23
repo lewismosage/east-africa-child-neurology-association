@@ -1,48 +1,86 @@
-import React, { useState } from "react";
-import { Calendar } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Calendar, ExternalLink } from "lucide-react";
+import { supabase } from "../../supabaseClient"; 
 
-const trainingEvents = [
-  {
-    id: 1,
-    title: "Pediatric Neurology Training Program",
-    date: "June 10-14, 2024",
-    location: "Nairobi, Kenya",
-    description:
-      "A comprehensive training program for pediatric neurologists focusing on the latest techniques and research.",
-    fullContent:
-      "This training program is designed for pediatric neurologists who want to stay updated on the latest advancements in the field. The program will cover topics such as neuroimaging, genetic disorders, and innovative treatment approaches. Participants will also have the opportunity to engage in hands-on workshops and case discussions with leading experts.",
-    type: "Training",
-  },
-  {
-    id: 2,
-    title: "Advanced Workshop on Pediatric Epilepsy",
-    date: "July 20, 2024",
-    location: "Kampala, Uganda",
-    description:
-      "An advanced workshop aimed at enhancing skills in managing pediatric epilepsy cases.",
-    fullContent:
-      "This workshop is tailored for healthcare professionals who specialize in pediatric epilepsy. It will focus on advanced diagnostic techniques, treatment protocols, and case management strategies. Participants will engage in interactive sessions and practical exercises to improve their clinical skills.",
-    type: "Workshop",
-  },
-  {
-    id: 3,
-    title: "Continuing Medical Education (CME) on Child Neurology",
-    date: "August 15, 2024",
-    location: "Dar es Salaam, Tanzania",
-    description:
-      "CME session covering recent advancements in child neurology and best practices.",
-    fullContent:
-      "This CME session is designed to provide healthcare professionals with the latest updates in child neurology. Topics will include advancements in neurodevelopmental disorders, neonatal neurology, and evidence-based treatment approaches. The session will also feature expert-led discussions and Q&A sessions.",
-    type: "CME",
-  },
-];
+interface Event {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  description: string;
+  type: string; // e.g., "Training", "Workshop", "CME"
+  registration_url?: string; // Optional field for registration URL
+}
 
 const TrainingEventsPage = () => {
-  // State to track expanded training events
-  const [expandedEvent, setExpandedEvent] = useState<{ [key: number]: boolean }>({});
+  const [events, setEvents] = useState<Event[]>([]);
+  const [expandedEvent, setExpandedEvent] = useState<{ [key: string]: boolean }>({});
 
-  // Toggle full content for training events
-  const toggleEvent = (id: number) => {
+  // Fetch training events from Supabase
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("type", "training") // Only fetch training events
+        .order("date", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching events:", error);
+      } else {
+        setEvents(data || []);
+      }
+    };
+
+    fetchEvents();
+
+    // Set up real-time subscription for changes to the events table
+    const eventsSubscription = supabase
+      .channel("public:events")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "events" },
+        (payload) => {
+          console.log("Real-time update:", payload);
+          if (payload.eventType === "INSERT") {
+            // Add new event to the list if it's a training event
+            const newEvent = payload.new as Event;
+            if (newEvent.type === "training") {
+              setEvents((prevEvents) => [newEvent, ...prevEvents]);
+            }
+          } else if (payload.eventType === "UPDATE") {
+            // Update existing event in the list if it's a training event
+            const updatedEvent = payload.new as Event;
+            if (updatedEvent.type === "training") {
+              setEvents((prevEvents) =>
+                prevEvents.map((event) =>
+                  event.id === updatedEvent.id ? updatedEvent : event
+                )
+              );
+            } else {
+              // Remove the event if it's no longer a training event
+              setEvents((prevEvents) =>
+                prevEvents.filter((event) => event.id !== updatedEvent.id)
+              );
+            }
+          } else if (payload.eventType === "DELETE") {
+            // Remove deleted event from the list
+            setEvents((prevEvents) =>
+              prevEvents.filter((event) => event.id !== payload.old.id)
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on component unmount
+    return () => {
+      supabase.removeChannel(eventsSubscription);
+    };
+  }, []);
+
+  // Toggle full content for events
+  const toggleEvent = (id: string) => {
     setExpandedEvent((prev) => ({
       ...prev,
       [id]: !prev[id],
@@ -60,7 +98,7 @@ const TrainingEventsPage = () => {
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {trainingEvents.map((event) => (
+          {events.map((event) => (
             <div
               key={event.id}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
@@ -72,18 +110,35 @@ const TrainingEventsPage = () => {
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{event.title}</h3>
                 <div className="text-sm text-gray-500 mb-4">
-                  <p>{event.date}</p>
+                  <p>{new Date(event.date).toLocaleDateString()}</p>
                   <p>{event.location}</p>
                 </div>
-                <p className="text-gray-600 mb-4">
-                  {expandedEvent[event.id] ? event.fullContent : event.description}
-                </p>
-                <button
-                  onClick={() => toggleEvent(event.id)}
-                  className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-md transition-colors"
+                <p
+                  className={`text-gray-600 mb-4 ${
+                    expandedEvent[event.id] ? "" : "line-clamp-3"
+                  }`}
                 >
-                  {expandedEvent[event.id] ? "Show Less" : "Learn More"}
-                </button>
+                  {event.description}
+                </p>
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => toggleEvent(event.id)}
+                    className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-md transition-colors"
+                  >
+                    {expandedEvent[event.id] ? "Show Less" : "Learn More"}
+                  </button>
+                  {event.registration_url && (
+                    <a
+                      href={event.registration_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Register
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           ))}
