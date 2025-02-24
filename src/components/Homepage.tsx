@@ -31,25 +31,25 @@ const PartnersSection: React.FC<PartnersSectionProps> = ({ partners }) => {
           Our Network of Partners
         </h2>
         <p className="text-xl max-w-2xl mx-auto mb-8 text-center text-black-600">
-           Working together to advance child neurology in East Africa.
-          </p>
+          Working together to advance child neurology in East Africa.
+        </p>
         <motion.div
           className="flex"
           animate={{
-            x: ["0%", "-100%"], 
+            x: ["0%", "-100%"], // Move from 0% to -100% of the container width
           }}
           transition={{
-            duration: 40, 
+            duration: 20, // Reduced duration for faster animation
             repeat: Infinity,
             ease: "linear",
           }}
         >
           {duplicatedPartners.map((partner: Partner, index: number) => (
             <motion.div
-              key={`${partner.id}-${index}`} 
+              key={`${partner.id}-${index}`} // Use a unique key for each duplicated partner
               className="flex-shrink-0 w-64 mx-4 p-6 bg-white rounded-lg shadow-md flex flex-col items-center justify-center cursor-pointer"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
+              whileHover={{ scale: 1.05 }} // Add a hover effect
+              transition={{ duration: 0.2 }} // Hover transition duration
             >
               <img
                 src={partner.logo}

@@ -41,6 +41,7 @@ import PaymentPage from './pages/memberportal/PaymentPage';
 import HomePage from "./components/Homepage";
 import SpecialistForm from "./pages/SpecialistForm";
 import TermsAndConditions from "./pages/Terms&Conditions";
+import Article from "./pages/Article";
 
 const App = () => {
   return (
@@ -81,6 +82,7 @@ const App = () => {
         <Route path="/memberportal/payment-page" element={<PaymentPage />} />
         <Route path="/specialist-form" element={<SpecialistForm />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/article/:id" element={<Article />} />
 
          {/* Admin Login Page */}
          <Route path="/admin/login" element={<AdminLogin />} />
