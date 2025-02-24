@@ -38,12 +38,14 @@ import  { InternationalGuidelines } from './pages/InternationalGuidelines';
 import { MedicalPracticeRegulations } from './pages/MedicalPracticeRegulations';
 import { LegislativeNews } from './pages/LegislativeNews';
 import PaymentPage from './pages/memberportal/PaymentPage';
+import HomePage from "./components/Homepage";
 
 const App = () => {
   return (
     <Router>
       <Navbar />
       <Routes>
+        <Route path="/" element={<HomePage />} />
         <Route path="/" element={<Hero />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/events/upcoming-events" element={<Upcomingevents />} />
@@ -75,6 +77,7 @@ const App = () => {
         <Route path="/medical-practice-regulations" element={<MedicalPracticeRegulations />} />
         <Route path="/legislative-news" element={<LegislativeNews />} />
         <Route path="/memberportal/payment-page" element={<PaymentPage />} />
+        
 
          {/* Admin Login Page */}
          <Route path="/admin/login" element={<AdminLogin />} />
