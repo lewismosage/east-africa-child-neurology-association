@@ -23,7 +23,7 @@ import { Leadership } from "./pages/Leadership";
 import AccountManagement from "./pages/memberportal/AccountManagement";
 import PaymentProcessing from "./pages/memberportal/PaymentProcessing";
 import { AdminLayout } from './pages/admin/AdminLayout';
-import { ManageResources } from './pages/admin/ManageResources';
+import SpecialistApproval from './pages/admin/SpecialistApproval';
 import ArtclesApproval from './pages/admin/ArticlesApproval';
 import { ManageEvents } from './pages/admin/ManageEvents';
 import { RequireAuth } from './components/admin/RequireAuth';
@@ -98,7 +98,7 @@ const App = () => {
           }
         >  
           <Route path="artcles-approval" element={<ArtclesApproval />} />
-          <Route path="resources" element={<ManageResources />} />
+          <Route path="specialist-approval" element={<SpecialistApproval />} />
           <Route path="events" element={<ManageEvents />} />
           <Route path="payment-verification" element={<PaymentVerification />} />
           </Route>

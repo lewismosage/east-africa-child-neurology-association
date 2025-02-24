@@ -8,8 +8,8 @@ interface Event {
   date: string;
   location: string;
   description: string;
-  type: string; // e.g., "Training", "Workshop", "CME"
-  registration_url?: string; // Optional field for registration URL
+  type: string; 
+  registration_url?: string; 
 }
 
 const TrainingEventsPage = () => {

@@ -1,29 +1,70 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 
+// Define the type for a specialist
+interface Specialist {
+  prefix: string; // Add prefix field
+  name: string;
+  title: string;
+  location: string;
+  specialties: string[];
+  contact: string;
+  email: string;
+}
+
 const FindSpecialist = () => {
   const [location, setLocation] = useState("All Countries");
   const [specialization, setSpecialization] = useState("All Specializations");
-  const navigate = useNavigate(); 
+  const [filteredSpecialists, setFilteredSpecialists] = useState<Specialist[]>([]);
+  const navigate = useNavigate(); // Initialize useNavigate
 
-  const specialists = [
+  // Sample data for specialists
+  const specialists: Specialist[] = [
     {
-      name: "Dr. Rachel Mwangi",
+      prefix: "Dr.",
+      name: "Rachel Mwangi",
       title: "Pediatric Neurologist",
       location: "Nairobi, Kenya",
       specialties: ["Epilepsy", "Movement Disorders"],
+      contact: "+254712345678",
+      email: "rachel.mwangi@example.com",
     },
     {
-      name: "Dr. John Kamau",
+      prefix: "Dr.",
+      name: "John Kamau",
       title: "Pediatric Neurologist",
       location: "Kampala, Uganda",
       specialties: ["Neurogenetics", "Neuromuscular"],
+      contact: "+256712345678",
+      email: "john.kamau@example.com",
+    },
+    {
+      prefix: "Dr.",
+      name: "Jane Doe",
+      title: "Pediatric Epilepsy Specialist",
+      location: "Nairobi, Kenya",
+      specialties: ["Pediatric Epilepsy"],
+      contact: "+254712345679",
+      email: "jane.doe@example.com",
     },
   ];
 
   // Function to handle the "Apply for Listing" button click
   const handleApplyForListing = () => {
-    navigate("/specialist-form"); 
+    navigate("/specialist-form"); // Navigate to the form page
+  };
+
+  // Function to handle the "Search Specialists" button click
+  const handleSearchSpecialists = () => {
+    const filtered = specialists.filter((specialist) => {
+      const matchesLocation =
+        location === "All Countries" || specialist.location.includes(location);
+      const matchesSpecialization =
+        specialization === "All Specializations" ||
+        specialist.specialties.includes(specialization);
+      return matchesLocation && matchesSpecialization;
+    });
+    setFilteredSpecialists(filtered);
   };
 
   return (
@@ -66,42 +107,48 @@ const FindSpecialist = () => {
           </div>
         </div>
         <div className="mt-6">
-          <button className="bg-purple-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-purple-700 transition duration-200">
+          <button
+            onClick={handleSearchSpecialists}
+            className="bg-purple-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-purple-700 transition duration-200"
+          >
             Search Specialists
           </button>
         </div>
       </section>
 
-      {/* Search Results */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {specialists.map((specialist, index) => (
-          <div key={index} className="bg-white p-6 rounded-lg shadow-md">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <div className="w-16 h-16 bg-purple-200 rounded-full flex items-center justify-center">
-                  <span className="text-purple-800 text-xl font-semibold">
-                    {specialist.name.split(" ")[1][0]}
-                  </span>
-                </div>
-              </div>
-              <div className="ml-4">
-                <h3 className="text-xl font-semibold mb-2">{specialist.name}</h3>
-                <p className="text-gray-600 mb-2">{specialist.title}</p>
-                <p className="text-gray-600 mb-2">{specialist.location}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {specialist.specialties.map((spec, i) => (
-                    <span
-                      key={i}
-                      className="bg-purple-100 text-purple-700 text-sm font-medium px-3 py-1 rounded-full"
-                    >
-                      {spec}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* Search Results in Table Format */}
+      <section className="bg-white p-6 rounded-lg shadow-md">
+        <table className="min-w-full">
+          <thead>
+            <tr>
+              <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+              <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialization</th>
+              <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+              <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredSpecialists.map((specialist, index) => (
+              <tr key={index}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">
+                    {specialist.prefix} {specialist.name} {/* Combine prefix and name */}
+                  </div>
+                  <div className="text-sm text-gray-500">{specialist.title}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {specialist.specialties.join(", ")}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{specialist.location}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <a href={`tel:${specialist.contact}`} className="text-purple-600 hover:text-purple-900">📞 Call Now</a>
+                  <span className="mx-2">|</span>
+                  <a href={`mailto:${specialist.email}`} className="text-purple-600 hover:text-purple-900">✉️ Email Now</a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </section>
 
       {/* Information Box */}
@@ -112,7 +159,7 @@ const FindSpecialist = () => {
           complete our verification process.
         </p>
         <button
-          onClick={handleApplyForListing} 
+          onClick={handleApplyForListing}
           className="bg-purple-500 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-purple-600 transition duration-200"
         >
           Apply for Listing

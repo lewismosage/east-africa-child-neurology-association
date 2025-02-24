@@ -10,18 +10,21 @@ export function SpecialistForm() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    fullName: "", // Added full name field
+    prefix: "Dr.",
+    fullName: "",
     email: "",
     phone: "",
-    qualificationDocuments: null as File | null, // Combined file upload for qualification documents
+    specialization: "",
+    location: "",
+    qualificationDocuments: null as File | null,
     acceptTerms: false,
   });
 
-  const [status, setStatus] = useState<React.ReactNode>("");
   const [loading, setLoading] = useState(false);
+  const [showPopup, setShowPopup] = useState(false); // State to control popup visibility
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
 
@@ -48,17 +51,19 @@ export function SpecialistForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setStatus("");
 
     // Validate required fields
     if (
+      !formData.prefix ||
       !formData.fullName ||
       !formData.email ||
       !formData.phone ||
+      !formData.specialization ||
+      !formData.location ||
       !formData.qualificationDocuments ||
       !formData.acceptTerms
     ) {
-      setStatus("Please fill out all required fields.");
+      alert("Please fill out all required fields."); // Simple alert for validation
       setLoading(false);
       return;
     }
@@ -67,7 +72,7 @@ export function SpecialistForm() {
     const uploadFile = async (file: File, folder: string) => {
       const filePath = `${folder}/${Date.now()}_${file.name}`;
       const { data, error } = await supabase.storage
-        .from("specialist-verification") // Ensure this matches the bucket name
+        .from("specialist-verification")
         .upload(filePath, file);
 
       if (error) {
@@ -85,9 +90,12 @@ export function SpecialistForm() {
       // Insert data into the `specialists` table
       const { error } = await supabase.from("specialists").insert([
         {
+          prefix: formData.prefix,
           full_name: formData.fullName,
           email: formData.email,
           phone: formData.phone,
+          specialization: formData.specialization,
+          location: formData.location,
           qualification_documents: qualificationDocumentsPath,
           terms_accepted: formData.acceptTerms,
         },
@@ -97,18 +105,23 @@ export function SpecialistForm() {
         throw new Error(`Failed to submit form: ${error.message}`);
       }
 
-      setStatus("Form submitted successfully!");
-      setLoading(false);
-      navigate("/success"); // Redirect to a success page
+      // Show the popup on successful submission
+      setShowPopup(true);
     } catch (error) {
       // Handle the error properly
       if (error instanceof Error) {
-        setStatus(`Error: ${error.message}`);
+        alert(`Error: ${error.message}`); // Simple alert for errors
       } else {
-        setStatus("An unknown error occurred.");
+        alert("An unknown error occurred.");
       }
+    } finally {
       setLoading(false);
     }
+  };
+
+  // Close the popup
+  const closePopup = () => {
+    setShowPopup(false);
   };
 
   return (
@@ -124,21 +137,39 @@ export function SpecialistForm() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {status && <p className="text-center text-red-600 mb-4">{status}</p>}
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Full Name
-              </label>
-              <input
-                type="text"
-                name="fullName"
-                placeholder="Full Name"
-                required
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
+            {/* Prefix and Full Name */}
+            <div className="grid grid-cols-[auto_1fr] gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Prefix
+                </label>
+                <select
+                  name="prefix"
+                  value={formData.prefix}
+                  onChange={handleChange}
+                  className="mt-1 block w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                >
+                  <option value="Dr.">Dr.</option>
+                  <option value="Mr.">Mr.</option>
+                  <option value="Miss">Miss</option>
+                  <option value="Mrs.">Mrs.</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="fullName"
+                  placeholder="Full Name"
+                  required
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
             </div>
 
             {/* Email */}
@@ -151,6 +182,7 @@ export function SpecialistForm() {
                 name="email"
                 placeholder="Email"
                 required
+                value={formData.email}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
@@ -166,9 +198,48 @@ export function SpecialistForm() {
                 name="phone"
                 placeholder="Phone Number"
                 required
+                value={formData.phone}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
+            </div>
+
+            {/* Specialization Dropdown */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Specialization
+              </label>
+              <select
+                name="specialization"
+                value={formData.specialization}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="">Select Specialization</option>
+                <option value="Pediatric Epilepsy">Pediatric Epilepsy</option>
+                <option value="Movement Disorders">Movement Disorders</option>
+                <option value="Neurogenetics">Neurogenetics</option>
+                <option value="Neuromuscular Disorders">Neuromuscular Disorders</option>
+              </select>
+            </div>
+
+            {/* Location Dropdown */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Location
+              </label>
+              <select
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="">Select Location</option>
+                <option value="Nairobi, Kenya">Nairobi, Kenya</option>
+                <option value="Kampala, Uganda">Kampala, Uganda</option>
+                <option value="Dar es Salaam, Tanzania">Dar es Salaam, Tanzania</option>
+                <option value="Kigali, Rwanda">Kigali, Rwanda</option>
+              </select>
             </div>
 
             {/* Upload Relevant Documents */}
@@ -192,16 +263,16 @@ export function SpecialistForm() {
                 type="checkbox"
                 name="acceptTerms"
                 required
+                checked={formData.acceptTerms}
                 onChange={handleChange}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label className="ml-2 block text-sm text-gray-900">
-            I accept 
-            <a href="/terms-and-conditions" className="text-primary hover:underline ml-1">
-                EACNA’s Terms & Conditions
-            </a>
-            </label>
-
+                I accept
+                <a href="/terms-and-conditions" className="text-primary hover:underline ml-1">
+                  EACNA’s Terms & Conditions
+                </a>
+              </label>
             </div>
 
             {/* Submit Button */}
@@ -217,6 +288,24 @@ export function SpecialistForm() {
           </form>
         </div>
       </div>
+
+      {/* Popup for successful submission */}
+      {showPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-md max-w-md">
+            <h2 className="text-xl font-semibold text-purple-700 mb-4">Thank You!</h2>
+            <p className="text-gray-700 mb-4">
+              Thank you for your submission. Our team will review your application, and if approved, we will reach out to you with further details regarding your inclusion in the EACNA directory.
+            </p>
+            <button
+              onClick={closePopup}
+              className="bg-purple-500 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-purple-600 transition duration-200"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
