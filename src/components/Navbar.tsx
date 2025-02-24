@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Menu, Search, ChevronDown, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import eacnaLogo from '../../assets/images/eacnalogo.jpg';
+import eacnaLogo from '../assets/eacnaLogo.jpg';
 import { supabase } from "../../supabaseClient";
 
 const Navbar = () => {
@@ -79,10 +79,11 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
           <img
-            src="/eacnalogo.jpg" 
+            src={eacnaLogo} 
             alt="EACNA Logo"
             className="h-8 w-8 mr-2 rounded-full"
           />
+
             <span className="text-xl font-bold">EACNA</span>
           </div>
 
