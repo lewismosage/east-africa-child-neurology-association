@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const FindSpecialist = () => {
   const [location, setLocation] = useState("All Countries");
   const [specialization, setSpecialization] = useState("All Specializations");
+  const navigate = useNavigate(); 
 
   const specialists = [
     {
@@ -18,6 +20,11 @@ const FindSpecialist = () => {
       specialties: ["Neurogenetics", "Neuromuscular"],
     },
   ];
+
+  // Function to handle the "Apply for Listing" button click
+  const handleApplyForListing = () => {
+    navigate("/specialist-form"); 
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -55,8 +62,8 @@ const FindSpecialist = () => {
             </select>
           </div>
           <div>
+            {/* Empty div for spacing */}
           </div>
-          
         </div>
         <div className="mt-6">
           <button className="bg-purple-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-purple-700 transition duration-200">
@@ -104,7 +111,10 @@ const FindSpecialist = () => {
           If you're a qualified child neurologist or specialist and would like to be listed in our directory, please
           complete our verification process.
         </p>
-        <button className="bg-purple-500 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-purple-600 transition duration-200">
+        <button
+          onClick={handleApplyForListing} 
+          className="bg-purple-500 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-purple-600 transition duration-200"
+        >
           Apply for Listing
         </button>
       </section>

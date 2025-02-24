@@ -5,7 +5,7 @@ import { supabase } from "../../../supabaseClient";
 
 export function RegisterForm() {
    useEffect(() => {
-      window.scrollTo(0, 0); // Ensures the page opens at the top
+      window.scrollTo(0, 0);
     }, []);
 
   const navigate = useNavigate();

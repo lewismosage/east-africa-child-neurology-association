@@ -39,6 +39,8 @@ import { MedicalPracticeRegulations } from './pages/MedicalPracticeRegulations';
 import { LegislativeNews } from './pages/LegislativeNews';
 import PaymentPage from './pages/memberportal/PaymentPage';
 import HomePage from "./components/Homepage";
+import SpecialistForm from "./pages/SpecialistForm";
+import TermsAndConditions from "./pages/Terms&Conditions";
 
 const App = () => {
   return (
@@ -77,7 +79,8 @@ const App = () => {
         <Route path="/medical-practice-regulations" element={<MedicalPracticeRegulations />} />
         <Route path="/legislative-news" element={<LegislativeNews />} />
         <Route path="/memberportal/payment-page" element={<PaymentPage />} />
-        
+        <Route path="/specialist-form" element={<SpecialistForm />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
 
          {/* Admin Login Page */}
          <Route path="/admin/login" element={<AdminLogin />} />
