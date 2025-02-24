@@ -99,7 +99,10 @@ const NewsletterManager = () => {
 
       {/* Subscriber List */}
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Subscriber List</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-semibold">Subscriber List</h2>
+          <span className="text-gray-600">Total Subscribers: {subscribers.length}</span>
+        </div>
         <div className="mb-4">
           <input
             type="text"
@@ -110,33 +113,35 @@ const NewsletterManager = () => {
           />
         </div>
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Email</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Subscription Date</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredSubscribers.map((subscriber) => (
-                <tr key={subscriber.id}>
-                  <td className="px-6 py-4 text-sm text-gray-900">{subscriber.email}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {new Date(subscriber.subscription_date).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    <button
-                      onClick={() => handleUnsubscribe(subscriber.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Unsubscribe
-                    </button>
-                  </td>
+          <div className="max-h-96 overflow-y-auto"> {/* Scrollable box */}
+            <table className="min-w-full">
+              <thead className="bg-gray-100 sticky top-0">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Email</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Subscription Date</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredSubscribers.map((subscriber) => (
+                  <tr key={subscriber.id}>
+                    <td className="px-6 py-4 text-sm text-gray-900">{subscriber.email}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {new Date(subscriber.subscription_date).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      <button
+                        onClick={() => handleUnsubscribe(subscriber.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Unsubscribe
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
