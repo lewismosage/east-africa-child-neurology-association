@@ -1,53 +1,102 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../../supabaseClient"; // Adjust the import path as needed
 
 // Define the type for a specialist
 interface Specialist {
-  prefix: string; // Add prefix field
-  name: string;
-  title: string;
-  location: string;
-  specialties: string[];
-  contact: string;
+  id: number;
+  prefix: string;
+  full_name: string;
   email: string;
+  phone: string;
+  specialization: string;
+  location: string;
+  qualification_documents: string;
+  terms_accepted: boolean;
+  status: string; // "pending", "approved", "rejected"
+  created_at: string;
 }
 
 const FindSpecialist = () => {
   const [location, setLocation] = useState("All Countries");
   const [specialization, setSpecialization] = useState("All Specializations");
   const [filteredSpecialists, setFilteredSpecialists] = useState<Specialist[]>([]);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const [allSpecialists, setAllSpecialists] = useState<Specialist[]>([]); // Store all specialists fetched from Supabase
+  const [loading, setLoading] = useState(true); // Loading state
+  const [showTable, setShowTable] = useState(false); // Control whether to show the table
+  const navigate = useNavigate();
 
-  // Sample data for specialists
-  const specialists: Specialist[] = [
-    {
-      prefix: "Dr.",
-      name: "Rachel Mwangi",
-      title: "Pediatric Neurologist",
-      location: "Nairobi, Kenya",
-      specialties: ["Epilepsy", "Movement Disorders"],
-      contact: "+254712345678",
-      email: "rachel.mwangi@example.com",
-    },
-    {
-      prefix: "Dr.",
-      name: "John Kamau",
-      title: "Pediatric Neurologist",
-      location: "Kampala, Uganda",
-      specialties: ["Neurogenetics", "Neuromuscular"],
-      contact: "+256712345678",
-      email: "john.kamau@example.com",
-    },
-    {
-      prefix: "Dr.",
-      name: "Jane Doe",
-      title: "Pediatric Epilepsy Specialist",
-      location: "Nairobi, Kenya",
-      specialties: ["Pediatric Epilepsy"],
-      contact: "+254712345679",
-      email: "jane.doe@example.com",
-    },
-  ];
+  // Fetch specialists from Supabase on component mount
+  useEffect(() => {
+    const fetchSpecialists = async () => {
+      try {
+        // Fetch only approved specialists
+        const { data, error } = await supabase
+          .from("specialists")
+          .select("*")
+          .eq("status", "approved") // Only fetch specialists with status "approved"
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          throw error;
+        }
+
+        console.log("Fetched specialists:", data);
+        setAllSpecialists(data as Specialist[]); // Store all approved specialists
+      } catch (error) {
+        console.error("Error fetching specialists:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSpecialists();
+
+    // Set up real-time subscription for changes to the `specialists` table
+    const specialistsSubscription = supabase
+      .channel("public:specialists")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "specialists" },
+        (payload) => {
+          console.log("Real-time update:", payload);
+          if (payload.eventType === "INSERT") {
+            const newSpecialist = payload.new as Specialist;
+            // Add new specialist to the list only if status is "approved"
+            if (newSpecialist.status === "approved") {
+              setAllSpecialists((prevSpecialists) => [newSpecialist, ...prevSpecialists]);
+            }
+          } else if (payload.eventType === "UPDATE") {
+            const updatedSpecialist = payload.new as Specialist;
+            // Update the specialist in the list only if status is "approved"
+            if (updatedSpecialist.status === "approved") {
+              setAllSpecialists((prevSpecialists) =>
+                prevSpecialists.map((specialist) =>
+                  specialist.id === updatedSpecialist.id ? updatedSpecialist : specialist
+                )
+              );
+            } else {
+              // Remove the specialist if status is no longer "approved"
+              setAllSpecialists((prevSpecialists) =>
+                prevSpecialists.filter((specialist) => specialist.id !== updatedSpecialist.id)
+              );
+            }
+          } else if (payload.eventType === "DELETE") {
+            const deletedSpecialist = payload.old as Specialist;
+            // Remove the deleted specialist from the list
+            setAllSpecialists((prevSpecialists) =>
+              prevSpecialists.filter((specialist) => specialist.id !== deletedSpecialist.id)
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on component unmount
+    return () => {
+      supabase.removeChannel(specialistsSubscription);
+    };
+  }, []);
 
   // Function to handle the "Apply for Listing" button click
   const handleApplyForListing = () => {
@@ -56,15 +105,16 @@ const FindSpecialist = () => {
 
   // Function to handle the "Search Specialists" button click
   const handleSearchSpecialists = () => {
-    const filtered = specialists.filter((specialist) => {
+    const filtered = allSpecialists.filter((specialist) => {
       const matchesLocation =
         location === "All Countries" || specialist.location.includes(location);
       const matchesSpecialization =
         specialization === "All Specializations" ||
-        specialist.specialties.includes(specialization);
+        specialist.specialization.includes(specialization);
       return matchesLocation && matchesSpecialization;
     });
     setFilteredSpecialists(filtered);
+    setShowTable(true); // Show the table after filtering
   };
 
   return (
@@ -117,39 +167,48 @@ const FindSpecialist = () => {
       </section>
 
       {/* Search Results in Table Format */}
-      <section className="bg-white p-6 rounded-lg shadow-md">
-        <table className="min-w-full">
-          <thead>
-            <tr>
-              <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
-              <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialization</th>
-              <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-              <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredSpecialists.map((specialist, index) => (
-              <tr key={index}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
-                    {specialist.prefix} {specialist.name} {/* Combine prefix and name */}
-                  </div>
-                  <div className="text-sm text-gray-500">{specialist.title}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {specialist.specialties.join(", ")}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{specialist.location}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <a href={`tel:${specialist.contact}`} className="text-purple-600 hover:text-purple-900">📞 Call Now</a>
-                  <span className="mx-2">|</span>
-                  <a href={`mailto:${specialist.email}`} className="text-purple-600 hover:text-purple-900">✉️ Email Now</a>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      {showTable && (
+        <section className="bg-white p-6 rounded-lg shadow-md">
+          {loading ? (
+            <p className="text-center">Loading specialists...</p>
+          ) : filteredSpecialists.length === 0 ? (
+            <p className="text-center">No specialists found.</p>
+          ) : (
+            <table className="min-w-full">
+              <thead>
+                <tr>
+                  <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+                  <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialization</th>
+                  <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                  <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredSpecialists.map((specialist) => (
+                  <tr key={specialist.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {specialist.prefix} {specialist.full_name} {/* Combine prefix and name */}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {specialist.specialization}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {specialist.location}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <a href={`tel:${specialist.phone}`} className="text-purple-600 hover:text-purple-900">📞 Call Now</a>
+                      <span className="mx-2">|</span>
+                      <a href={`mailto:${specialist.email}`} className="text-purple-600 hover:text-purple-900">✉️ Email Now</a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+      )}
 
       {/* Information Box */}
       <section className="mt-8 bg-white p-6 rounded-lg shadow-md">

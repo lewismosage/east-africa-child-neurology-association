@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Shield } from 'lucide-react';
-import { supabase } from '../../../supabaseClient'; // Import the Supabase client
+import { supabase } from '../../../supabaseClient'; 
 
 export function AdminLogin() {
   const navigate = useNavigate();

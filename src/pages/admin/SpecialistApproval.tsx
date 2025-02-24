@@ -21,6 +21,17 @@ const SpecialistApproval = () => {
   const [error, setError] = useState("");
   const [selectedSpecialist, setSelectedSpecialist] = useState<Specialist | null>(null); // Track selected specialist for modal
   const [isModalOpen, setIsModalOpen] = useState(false); // Control modal visibility
+  const [user, setUser] = useState<any>(null); // Track authenticated user
+
+  // Check if user is authenticated on component mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    fetchUser();
+  }, []);
 
   // Fetch specialists on component mount
   useEffect(() => {
@@ -46,9 +57,15 @@ const SpecialistApproval = () => {
       }
     };
 
-    fetchSpecialists();
+    if (user) {
+      fetchSpecialists();
+    }
+  }, [user]);
 
-    // Set up real-time subscription for changes to the `specialists` table
+  // Set up real-time subscription for changes to the `specialists` table
+  useEffect(() => {
+    if (!user) return;
+
     const specialistsSubscription = supabase
       .channel("public:specialists")
       .on(
@@ -83,9 +100,14 @@ const SpecialistApproval = () => {
     return () => {
       supabase.removeChannel(specialistsSubscription);
     };
-  }, []);
+  }, [user]);
 
   const handleApprove = async (specialistId: number) => {
+    if (!user) {
+      setError("You must be logged in to approve specialists.");
+      return;
+    }
+
     try {
       // Update the specialist status to "approved"
       const { error } = await supabase
@@ -111,6 +133,11 @@ const SpecialistApproval = () => {
   };
 
   const handleReject = async (specialistId: number) => {
+    if (!user) {
+      setError("You must be logged in to reject specialists.");
+      return;
+    }
+
     try {
       // Update the specialist status to "rejected"
       const { error } = await supabase
@@ -151,13 +178,15 @@ const SpecialistApproval = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col py-6 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-7xl">
         <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
-        Specialists Directory
+          Specialists Directory
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Approve or reject specialists applications submitted by applicants
         </p>
 
-        {loading ? (
+        {!user ? (
+          <p className="text-center mt-4">Please log in to view specialists.</p>
+        ) : loading ? (
           <p className="text-center mt-4">Loading...</p>
         ) : error ? (
           <p className="text-center text-red-600 mt-4">{error}</p>
