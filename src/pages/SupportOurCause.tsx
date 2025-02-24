@@ -53,24 +53,24 @@ export function SupportOurCause() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="relative py-24 bg-gradient-to-r from-blue-900 to-blue-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-6">
-              Support Our Cause
-            </h1>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-              Help us make quality neurological care accessible to every child in East Africa
-            </p>
-          </div>
+      <div className="relative py-24 bg-gradient-to-r from-[#4A154B] via-[#2E1A47] to-[#1E3A8A]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-white mb-6">
+            Support Our Cause
+          </h1>
+          <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+            Help us make quality neurological care accessible to every child in East Africa
+          </p>
         </div>
       </div>
+    </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Ways to Support */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900">Ways to Support</h2>
+          <h2 className="text-3xl font-bold text-primary">Ways to Support</h2>
           <p className="mt-4 text-lg text-gray-600">
             Every contribution makes a difference in a child's life
           </p>
@@ -99,7 +99,7 @@ export function SupportOurCause() {
 
         {/* Current Initiatives */}
         <div className="bg-white rounded-xl shadow-lg p-8 mb-16">
-          <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Current Initiatives</h3>
+          <h3 className="text-2xl font-bold text-primary mb-8 text-center">Current Initiatives</h3>
           <div className="space-y-8">
             {impactAreas.map((area) => (
               <div key={area.title} className="bg-gray-50 rounded-lg p-6">
@@ -138,7 +138,7 @@ export function SupportOurCause() {
         {/* Donation Form */}
         <div className="bg-white rounded-xl shadow-lg p-8">
           <div className="max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Make a Donation</h3>
+            <h3 className="text-2xl font-bold text-primary mb-8 text-center">Make a Donation</h3>
             <form className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>

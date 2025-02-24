@@ -21,24 +21,31 @@ const values = [
 export function Hero() {
   return (
     <div className="relative h-[60vh] flex items-center justify-center">
+    <div
+      className="absolute inset-0 z-0"
+      style={{
+        backgroundImage: 'url("https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?auto=format&fit=crop&q=80")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Gradient overlay */}
       <div
-        className="absolute inset-0 z-0"
+        className="absolute inset-0"
         style={{
-          backgroundImage: 'url("https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?auto=format&fit=crop&q=80")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          background: 'linear-gradient(to right, #4A154B, #2E1A47, #1E3A8A)',
+          opacity: '0.8', 
         }}
-      >
-        <div className="absolute inset-0 bg-blue-900/80" />
-      </div>
-      <div className="relative z-10 text-center text-white px-4">
-        <h1 className="text-5xl font-bold mb-6">About EACNA</h1>
-        <p className="text-xl max-w-2xl mx-auto">
-          Transforming child neurology care across East Africa through innovation,
-          education, and compassionate healthcare delivery.
-        </p>
-      </div>
+      />
     </div>
+    <div className="relative z-10 text-center text-white px-4">
+      <h1 className="text-5xl font-bold mb-6">About EACNA</h1>
+      <p className="text-xl max-w-2xl mx-auto">
+        Transforming child neurology care across East Africa through innovation,
+        education, and compassionate healthcare delivery.
+      </p>
+    </div>
+  </div>
   );
 }
 
@@ -47,7 +54,7 @@ export function Impact() {
     <section className="py-24 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl mb-4">Our Impact</h2>
+          <h2 className="text-3xl font-bold text-primary sm:text-4xl mb-4">Our Impact</h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Making a real difference in child neurology care across East Africa
           </p>
@@ -100,7 +107,7 @@ export function Mission() {
 
           <div className="space-y-8">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl mb-4">Our Mission & Vision</h2>
+              <h2 className="text-3xl font-bold text-primary sm:text-4xl mb-4">Our Mission & Vision</h2>
               <p className="text-lg text-gray-600 mb-8">
                 We strive to revolutionize child neurology care in East Africa through excellence in education, research, and clinical practice.
               </p>
@@ -137,7 +144,7 @@ export function CoreValues() {
   return (
     <section className="py-24 bg-blue-50">
       <div className="max-w-7xl mx-auto px-6 text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Core Values</h2>
+        <h2 className="text-3xl font-bold text-primary mb-4">Our Core Values</h2>
         <p className="text-lg text-gray-600 mb-12">Guiding principles in child neurology care and education</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {values.map((value) => {

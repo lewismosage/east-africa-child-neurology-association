@@ -216,7 +216,7 @@ const MyPublications = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-4">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+            <h2 className="text-2xl font-bold leading-7 text-primary sm:text-3xl sm:truncate">
               My Articles & Publications
             </h2>
             <div className="relative">

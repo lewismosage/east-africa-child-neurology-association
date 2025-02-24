@@ -67,7 +67,7 @@ const NewsAndNewsletters = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-7xl">
         {/* News Section */}
-        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">News</h2>
+        <h2 className="text-center text-3xl font-bold tracking-tight text-primary">News</h2>
         <p className="mt-2 text-center text-sm text-gray-600">Latest news and updates.</p>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <section className="mb-12">
@@ -97,7 +97,7 @@ const NewsAndNewsletters = () => {
         </div>
 
         {/* Newsletters Section */}
-        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">Newsletters</h2>
+        <h2 className="text-center text-3xl font-bold tracking-tight text-primary">Newsletters</h2>
         <p className="mt-2 text-center text-sm text-gray-600">Our latest newsletters.</p>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <section className="mb-12">

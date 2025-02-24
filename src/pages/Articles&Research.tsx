@@ -98,29 +98,29 @@ const Research = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="relative py-16 bg-gradient-to-r from-blue-900 to-blue-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-6">
-              Research & Publications
-            </h1>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto mb-8">
-              Explore the latest research & publications in child neurology
-              across East Africa
-            </p>
-            <div className="max-w-xl mx-auto relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search articles..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-lg bg-white shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+      <div className="relative py-16 bg-gradient-to-r from-[#4A154B] via-[#2E1A47] to-[#1E3A8A]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-white mb-6">
+            Research & Publications
+          </h1>
+          <p className="text-xl text-blue-100 max-w-2xl mx-auto mb-8">
+            Explore the latest research & publications in child neurology
+            across East Africa
+          </p>
+          <div className="max-w-xl mx-auto relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search articles..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-lg bg-white shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
         </div>
       </div>
+    </div>
 
       {/* Categories */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-1">
