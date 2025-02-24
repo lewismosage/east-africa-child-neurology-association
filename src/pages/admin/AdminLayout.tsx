@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { FileText, Calendar, CreditCard, Settings, LogOut, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { FileText, Calendar, CreditCard, Settings, LogOut, Menu, X, ChevronLeft, ChevronRight, Newspaper } from "lucide-react";
 import { RequireAuth } from "../../components/admin/RequireAuth";
 
 const sidebarItems = [
@@ -8,6 +8,7 @@ const sidebarItems = [
   { icon: Calendar, label: "Manage Events", path: "/admin/events" },
   { icon: CreditCard, label: "Payment Processing", path: "/admin/payment-verification" },
   { icon: FileText, label: "Articles & Publications Moderation", path: "/admin/artcles-approval" },
+  { icon: Newspaper, label: "Newsletter Manager", path: "/admin/newsletter-manager" },
 ];
 
 export function AdminLayout() {

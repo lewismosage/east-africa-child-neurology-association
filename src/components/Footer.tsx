@@ -1,21 +1,55 @@
-import React from 'react';
-import { Facebook, Twitter, Linkedin, Mail } from 'lucide-react';
+import React, { useState } from "react";
+import { Facebook, Twitter, Linkedin, Mail } from "lucide-react";
+import { supabase } from "../../supabaseClient"; // Adjust the import path
 
 export function Footer() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
   const navigation = {
     main: [
-      { name: 'About', href: 'about-us/our-organization' },
-      { name: 'Research & Publications', href: 'publication/research-&-publications' },
-      { name: 'Events', href: '/events/upcoming-events' },
-      { name: 'Contact', href: '/contact' },
-      { name: 'Member Portal', href: '/membership/login' },
+      { name: "About", href: "about-us/our-organization" },
+      { name: "Research & Publications", href: "publication/research-&-publications" },
+      { name: "Events", href: "/events/upcoming-events" },
+      { name: "Contact", href: "/contact" },
+      { name: "Member Portal", href: "/membership/login" },
     ],
     social: [
-      { name: 'Facebook', href: '#', icon: Facebook },
-      { name: 'Twitter', href: '#', icon: Twitter },
-      { name: 'LinkedIn', href: '#', icon: Linkedin },
-      { name: 'Email', href: '#', icon: Mail },
+      { name: "Facebook", href: "#", icon: Facebook },
+      { name: "Twitter", href: "#", icon: Twitter },
+      { name: "LinkedIn", href: "#", icon: Linkedin },
+      { name: "Email", href: "#", icon: Mail },
     ],
+  };
+
+  // Handle newsletter subscription
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Insert the email into the Supabase subscribers table
+      const { error } = await supabase
+        .from("subscribers")
+        .insert([{ email }]);
+
+      if (error) {
+        throw error;
+      }
+
+      // Clear the input and show success message
+      setEmail("");
+      setNotification({ type: "success", message: "Thank you for subscribing!" });
+    } catch (error) {
+      console.error("Error subscribing:", error);
+      setNotification({ type: "error", message: "Failed to subscribe. Please try again." });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,16 +86,34 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-semibold text-white mb-4">Newsletter</h3>
             <p className="text-gray-400 mb-4">Stay updated with our latest news and events.</p>
-            <form className="space-y-4">
+            <form onSubmit={handleSubscribe} className="space-y-4">
               <input
                 type="email"
                 placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
-              <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                Subscribe
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                {loading ? "Subscribing..." : "Subscribe"}
               </button>
             </form>
+            {notification && (
+              <div
+                className={`mt-4 p-2 rounded-lg text-sm ${
+                  notification.type === "success"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {notification.message}
+              </div>
+            )}
           </div>
         </div>
 

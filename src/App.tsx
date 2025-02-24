@@ -42,6 +42,8 @@ import HomePage from "./components/Homepage";
 import SpecialistForm from "./pages/SpecialistForm";
 import TermsAndConditions from "./pages/Terms&Conditions";
 import Article from "./pages/Article";
+import NewsletterManager from "./pages/admin/NewsletterManager";
+
 
 const App = () => {
   return (
@@ -103,6 +105,7 @@ const App = () => {
           <Route path="specialist-approval" element={<SpecialistApproval />} />
           <Route path="events" element={<ManageEvents />} />
           <Route path="payment-verification" element={<PaymentVerification />} />
+          <Route path="newsletter-manager" element={<NewsletterManager />} />
           </Route>
       </Routes> 
       <Footer />
