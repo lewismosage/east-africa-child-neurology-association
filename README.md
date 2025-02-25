@@ -27,10 +27,10 @@ The **East Africa Child Neurology Association (EACNA) Website** is a professiona
 
 ## 🏗️ Tech Stack
 - **Frontend**: React, Vite, TypeScript, Tailwind CSS
-- **Backend**: Node.js / Express.js (or Django if applicable)
-- **Database**: MongoDB / PostgreSQL (as per implementation)
+- **Backend**: Node.js 
+- **Database**: MongoDB / PostgreSQL 
 - **Authentication**: JWT-based authentication
-- **Hosting**: Vercel / Netlify for frontend, and backend on a cloud platform
+- **Hosting**: Vercel 
 
 ## 🎨 Design & Branding
 - **Primary Colors**: Deep Purple & Blue-Violet
