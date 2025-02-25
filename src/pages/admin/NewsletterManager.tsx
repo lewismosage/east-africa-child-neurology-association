@@ -2,8 +2,22 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../../../supabaseClient";
 import emailjs from "@emailjs/browser";
 
+interface Subscriber {
+  id: string;
+  email: string;
+  subscription_date: string;
+}
+
+interface NewsUpdate {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+  type: string;
+}
+
 const NewsletterManager = () => {
-  const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -13,6 +27,13 @@ const NewsletterManager = () => {
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  // State for news updates
+  const [newsUpdates, setNewsUpdates] = useState<NewsUpdate[]>([]);
+  const [editNews, setEditNews] = useState<NewsUpdate | null>(null);
+  const [newNewsTitle, setNewNewsTitle] = useState("");
+  const [newNewsContent, setNewNewsContent] = useState("");
+  const [newNewsType, setNewNewsType] = useState("news");
 
   // Fetch subscribers from Supabase
   useEffect(() => {
@@ -33,16 +54,44 @@ const NewsletterManager = () => {
     fetchSubscribers();
   }, []);
 
-  // Filter subscribers by email
-  const filteredSubscribers = subscribers.filter((subscriber) =>
-    subscriber.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Fetch news updates from Supabase
+  useEffect(() => {
+    const fetchNewsUpdates = async () => {
+      const { data, error } = await supabase
+        .from("news_updates")
+        .select("*")
+        .order("date", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching news updates:", error);
+        setNotification({ type: "error", message: "Failed to fetch news updates." });
+      } else {
+        setNewsUpdates(data || []);
+      }
+    };
+
+    fetchNewsUpdates();
+  }, []);
+
+  // Handle unsubscribe
+  const handleUnsubscribe = async (id: string) => {
+    if (window.confirm("Are you sure you want to unsubscribe this user?")) {
+      const { error } = await supabase.from("subscribers").delete().eq("id", id);
+
+      if (error) {
+        console.error("Error unsubscribing:", error);
+        setNotification({ type: "error", message: "Failed to unsubscribe." });
+      } else {
+        setSubscribers((prev) => prev.filter((subscriber) => subscriber.id !== id));
+        setNotification({ type: "success", message: "Subscriber removed successfully!" });
+      }
+    }
+  };
 
   // Handle sending newsletter
   const handleSendNewsletter = async () => {
     setLoading(true);
     try {
-      // Send newsletter to all subscribers using EmailJS
       const serviceID = "YOUR_EMAILJS_SERVICE_ID";
       const templateID = "YOUR_EMAILJS_TEMPLATE_ID";
       const publicKey = "YOUR_EMAILJS_PUBLIC_KEY";
@@ -67,25 +116,69 @@ const NewsletterManager = () => {
     }
   };
 
-  // Handle unsubscribe
-  const handleUnsubscribe = async (id: string) => {
-    if (window.confirm("Are you sure you want to unsubscribe this user?")) {
-      const { error } = await supabase.from("subscribers").delete().eq("id", id);
+  // Handle adding/editing news
+  const handleSaveNews = async () => {
+    if (!newNewsTitle || !newNewsContent || !newNewsType) {
+      setNotification({ type: "error", message: "Please fill all fields." });
+      return;
+    }
 
-      if (error) {
-        console.error("Error unsubscribing:", error);
-        setNotification({ type: "error", message: "Failed to unsubscribe." });
+    setLoading(true);
+    try {
+      if (editNews) {
+        // Update existing news
+        const { error } = await supabase
+          .from("news_updates")
+          .update({ title: newNewsTitle, content: newNewsContent, type: newNewsType })
+          .eq("id", editNews.id);
+
+        if (error) throw error;
+        setNotification({ type: "success", message: "News updated successfully!" });
       } else {
-        setSubscribers((prev) => prev.filter((subscriber) => subscriber.id !== id));
-        setNotification({ type: "success", message: "Subscriber removed successfully!" });
+        // Add new news
+        const { error } = await supabase
+          .from("news_updates")
+          .insert([{ title: newNewsTitle, content: newNewsContent, type: newNewsType, date: new Date().toISOString() }]);
+
+        if (error) throw error;
+        setNotification({ type: "success", message: "News added successfully!" });
       }
+
+      // Refresh news list
+      const { data } = await supabase.from("news_updates").select("*").order("date", { ascending: false });
+      setNewsUpdates(data || []);
+      setEditNews(null);
+      setNewNewsTitle("");
+      setNewNewsContent("");
+      setNewNewsType("news");
+    } catch (error) {
+      console.error("Error saving news:", error);
+      setNotification({ type: "error", message: "Failed to save news." });
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Calculate the height for 5 rows
-  const rowHeight = 48; // Approximate height of each row in pixels
-  const tableHeaderHeight = 56; // Approximate height of the table header in pixels
-  const minHeight = rowHeight * 5 + tableHeaderHeight;
+  // Handle deleting news
+  const handleDeleteNews = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this news?")) {
+      setLoading(true);
+      try {
+        const { error } = await supabase.from("news_updates").delete().eq("id", id);
+        if (error) throw error;
+
+        // Refresh news list
+        const { data } = await supabase.from("news_updates").select("*").order("date", { ascending: false });
+        setNewsUpdates(data || []);
+        setNotification({ type: "success", message: "News deleted successfully!" });
+      } catch (error) {
+        console.error("Error deleting news:", error);
+        setNotification({ type: "error", message: "Failed to delete news." });
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -118,7 +211,7 @@ const NewsletterManager = () => {
           />
         </div>
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div style={{ maxHeight: `${minHeight}px`, overflowY: "auto" }}> {/* Scrollable box */}
+          <div style={{ maxHeight: "400px", overflowY: "auto" }}>
             <table className="min-w-full">
               <thead className="bg-gray-100 sticky top-0">
                 <tr>
@@ -128,22 +221,26 @@ const NewsletterManager = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredSubscribers.map((subscriber) => (
-                  <tr key={subscriber.id}>
-                    <td className="px-6 py-4 text-sm text-gray-900">{subscriber.email}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {new Date(subscriber.subscription_date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      <button
-                        onClick={() => handleUnsubscribe(subscriber.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Unsubscribe
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {subscribers
+                  .filter((subscriber) =>
+                    subscriber.email.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .map((subscriber) => (
+                    <tr key={subscriber.id}>
+                      <td className="px-6 py-4 text-sm text-gray-900">{subscriber.email}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {new Date(subscriber.subscription_date).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        <button
+                          onClick={() => handleUnsubscribe(subscriber.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Unsubscribe
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -151,7 +248,7 @@ const NewsletterManager = () => {
       </section>
 
       {/* Send Newsletter Form */}
-      <section>
+      <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Send Newsletter</h2>
         <form
           onSubmit={(e) => {
@@ -187,6 +284,72 @@ const NewsletterManager = () => {
             Send Newsletter
           </button>
         </form>
+      </section>
+
+      {/* Latest News & Newsletter Updates */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-semibold mb-4">Latest News & Newsletter Updates</h2>
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Title"
+              value={newNewsTitle}
+              onChange={(e) => setNewNewsTitle(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-lg mb-2"
+            />
+            <textarea
+              placeholder="Content"
+              value={newNewsContent}
+              onChange={(e) => setNewNewsContent(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-lg mb-2"
+              rows={4}
+            />
+            <select
+              value={newNewsType}
+              onChange={(e) => setNewNewsType(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-lg mb-2"
+            >
+              <option value="news">News</option>
+              <option value="news">Press Release</option>
+              <option value="newsletter">Newsletter</option>
+            </select>
+            <button
+              onClick={handleSaveNews}
+              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark"
+            >
+              {editNews ? "Update News" : "Add News"}
+            </button>
+          </div>
+          <div className="space-y-4">
+            {newsUpdates.map((news) => (
+              <div key={news.id} className="border p-4 rounded-lg">
+                <h3 className="font-semibold">{news.title}</h3>
+                <p className="text-sm text-gray-600">{news.content}</p>
+                <p className="text-xs text-gray-500">{new Date(news.date).toLocaleDateString()}</p>
+                <div className="mt-2">
+                  <button
+                    onClick={() => {
+                      setEditNews(news);
+                      setNewNewsTitle(news.title);
+                      setNewNewsContent(news.content);
+                      setNewNewsType(news.type);
+                    }}
+                    className="text-blue-600 hover:text-blue-900 mr-2"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteNews(news.id)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Send Newsletter Confirmation Modal */}
