@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../../../supabaseClient";
 import emailjs from "@emailjs/browser";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css"; // Import the CSS
 
 interface Subscriber {
   id: string;
@@ -34,6 +36,8 @@ const NewsletterManager = () => {
   const [newNewsTitle, setNewNewsTitle] = useState("");
   const [newNewsContent, setNewNewsContent] = useState("");
   const [newNewsType, setNewNewsType] = useState("news");
+  const [newNewsDate, setNewNewsDate] = useState<Date | null>(new Date()); // State for the date picker
+  const [buttonText, setButtonText] = useState("Add News"); // State for button text
 
   // Fetch subscribers from Supabase
   useEffect(() => {
@@ -118,7 +122,7 @@ const NewsletterManager = () => {
 
   // Handle adding/editing news
   const handleSaveNews = async () => {
-    if (!newNewsTitle || !newNewsContent || !newNewsType) {
+    if (!newNewsTitle || !newNewsContent || !newNewsType || !newNewsDate) {
       setNotification({ type: "error", message: "Please fill all fields." });
       return;
     }
@@ -129,7 +133,7 @@ const NewsletterManager = () => {
         // Update existing news
         const { error } = await supabase
           .from("news_updates")
-          .update({ title: newNewsTitle, content: newNewsContent, type: newNewsType })
+          .update({ title: newNewsTitle, content: newNewsContent, type: newNewsType, date: newNewsDate.toISOString() })
           .eq("id", editNews.id);
 
         if (error) throw error;
@@ -138,10 +142,12 @@ const NewsletterManager = () => {
         // Add new news
         const { error } = await supabase
           .from("news_updates")
-          .insert([{ title: newNewsTitle, content: newNewsContent, type: newNewsType, date: new Date().toISOString() }]);
+          .insert([{ title: newNewsTitle, content: newNewsContent, type: newNewsType, date: newNewsDate.toISOString() }]);
 
         if (error) throw error;
         setNotification({ type: "success", message: "News added successfully!" });
+        setButtonText("Added"); // Change button text to "Added"
+        setTimeout(() => setButtonText("Add News"), 2000); // Reset after 2 seconds
       }
 
       // Refresh news list
@@ -151,6 +157,7 @@ const NewsletterManager = () => {
       setNewNewsTitle("");
       setNewNewsContent("");
       setNewNewsType("news");
+      setNewNewsDate(new Date());
     } catch (error) {
       console.error("Error saving news:", error);
       setNotification({ type: "error", message: "Failed to save news." });
@@ -288,7 +295,7 @@ const NewsletterManager = () => {
 
       {/* Latest News & Newsletter Updates */}
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Latest News & Newsletter Updates</h2>
+        <h2 className="text-2xl font-semibold mb-4">Latest News, Press Release & Newsletter Updates</h2>
         <div className="bg-white rounded-lg shadow p-6">
           <div className="mb-4">
             <input
@@ -311,22 +318,32 @@ const NewsletterManager = () => {
               className="w-full p-2 border border-gray-300 rounded-lg mb-2"
             >
               <option value="news">News</option>
-              <option value="news">Press Release</option>
+              <option value="press-release">Press Release</option>
               <option value="newsletter">Newsletter</option>
             </select>
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+              <DatePicker
+                selected={newNewsDate}
+                onChange={(date: Date | null) => setNewNewsDate(date)}
+                className="w-full p-2 border border-gray-300 rounded-lg"
+                dateFormat="yyyy-MM-dd"
+              />
+            </div>
             <button
               onClick={handleSaveNews}
               className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark"
             >
-              {editNews ? "Update News" : "Add News"}
+              {buttonText}
             </button>
           </div>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {newsUpdates.map((news) => (
               <div key={news.id} className="border p-4 rounded-lg">
                 <h3 className="font-semibold">{news.title}</h3>
                 <p className="text-sm text-gray-600">{news.content}</p>
                 <p className="text-xs text-gray-500">{new Date(news.date).toLocaleDateString()}</p>
+                <p className="text-xs text-gray-500 capitalize">{news.type}</p>
                 <div className="mt-2">
                   <button
                     onClick={() => {
@@ -334,6 +351,7 @@ const NewsletterManager = () => {
                       setNewNewsTitle(news.title);
                       setNewNewsContent(news.content);
                       setNewNewsType(news.type);
+                      setNewNewsDate(new Date(news.date));
                     }}
                     className="text-blue-600 hover:text-blue-900 mr-2"
                   >
