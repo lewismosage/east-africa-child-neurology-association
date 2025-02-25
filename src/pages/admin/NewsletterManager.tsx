@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../../../supabaseClient";
 import emailjs from "@emailjs/browser";
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css"; // Import the CSS
+import "react-datepicker/dist/react-datepicker.css"; 
+import ConfirmationModal from "../../pages/ConfirmationModalProps"; 
 
 interface Subscriber {
   id: string;
@@ -38,6 +39,11 @@ const NewsletterManager = () => {
   const [newNewsType, setNewNewsType] = useState("news");
   const [newNewsDate, setNewNewsDate] = useState<Date | null>(new Date()); // State for the date picker
   const [buttonText, setButtonText] = useState("Add News"); // State for button text
+
+  // State for confirmation modal
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [confirmationAction, setConfirmationAction] = useState<"unsubscribe" | "delete" | null>(null);
+  const [confirmationId, setConfirmationId] = useState<string | null>(null);
 
   // Fetch subscribers from Supabase
   useEffect(() => {
@@ -79,17 +85,52 @@ const NewsletterManager = () => {
 
   // Handle unsubscribe
   const handleUnsubscribe = async (id: string) => {
-    if (window.confirm("Are you sure you want to unsubscribe this user?")) {
-      const { error } = await supabase.from("subscribers").delete().eq("id", id);
+    setConfirmationAction("unsubscribe");
+    setConfirmationId(id);
+    setIsConfirmationModalOpen(true);
+  };
+
+  // Handle deleting news
+  const handleDeleteNews = async (id: string) => {
+    setConfirmationAction("delete");
+    setConfirmationId(id);
+    setIsConfirmationModalOpen(true);
+  };
+
+  // Handle confirmation modal actions
+  const handleConfirmation = async () => {
+    if (confirmationAction === "unsubscribe" && confirmationId) {
+      const { error } = await supabase.from("subscribers").delete().eq("id", confirmationId);
 
       if (error) {
         console.error("Error unsubscribing:", error);
         setNotification({ type: "error", message: "Failed to unsubscribe." });
       } else {
-        setSubscribers((prev) => prev.filter((subscriber) => subscriber.id !== id));
+        setSubscribers((prev) => prev.filter((subscriber) => subscriber.id !== confirmationId));
         setNotification({ type: "success", message: "Subscriber removed successfully!" });
       }
+    } else if (confirmationAction === "delete" && confirmationId) {
+      setLoading(true);
+      try {
+        const { error } = await supabase.from("news_updates").delete().eq("id", confirmationId);
+        if (error) throw error;
+
+        // Refresh news list
+        const { data } = await supabase.from("news_updates").select("*").order("date", { ascending: false });
+        setNewsUpdates(data || []);
+        setNotification({ type: "success", message: "News deleted successfully!" });
+      } catch (error) {
+        console.error("Error deleting news:", error);
+        setNotification({ type: "error", message: "Failed to delete news." });
+      } finally {
+        setLoading(false);
+      }
     }
+
+    // Close the modal
+    setIsConfirmationModalOpen(false);
+    setConfirmationAction(null);
+    setConfirmationId(null);
   };
 
   // Handle sending newsletter
@@ -163,27 +204,6 @@ const NewsletterManager = () => {
       setNotification({ type: "error", message: "Failed to save news." });
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Handle deleting news
-  const handleDeleteNews = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this news?")) {
-      setLoading(true);
-      try {
-        const { error } = await supabase.from("news_updates").delete().eq("id", id);
-        if (error) throw error;
-
-        // Refresh news list
-        const { data } = await supabase.from("news_updates").select("*").order("date", { ascending: false });
-        setNewsUpdates(data || []);
-        setNotification({ type: "success", message: "News deleted successfully!" });
-      } catch (error) {
-        console.error("Error deleting news:", error);
-        setNotification({ type: "error", message: "Failed to delete news." });
-      } finally {
-        setLoading(false);
-      }
     }
   };
 
@@ -394,6 +414,19 @@ const NewsletterManager = () => {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal for Unsubscribe and Delete */}
+      <ConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={() => setIsConfirmationModalOpen(false)}
+        onConfirm={handleConfirmation}
+        message={
+          confirmationAction === "unsubscribe"
+            ? "Are you sure you want to unsubscribe this user?"
+            : "Are you sure you want to delete this news?"
+        }
+        confirmButtonText={confirmationAction === "unsubscribe" ? "Unsubscribe" : "Delete"}
+      />
     </div>
   );
 };
