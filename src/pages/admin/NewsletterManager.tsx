@@ -82,6 +82,11 @@ const NewsletterManager = () => {
     }
   };
 
+  // Calculate the height for 5 rows
+  const rowHeight = 48; // Approximate height of each row in pixels
+  const tableHeaderHeight = 56; // Approximate height of the table header in pixels
+  const minHeight = rowHeight * 5 + tableHeaderHeight;
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <h1 className="text-3xl font-bold text-primary mb-8">News & Newsletters Manager</h1>
@@ -113,7 +118,7 @@ const NewsletterManager = () => {
           />
         </div>
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="max-h-96 overflow-y-auto"> {/* Scrollable box */}
+          <div style={{ maxHeight: `${minHeight}px`, overflowY: "auto" }}> {/* Scrollable box */}
             <table className="min-w-full">
               <thead className="bg-gray-100 sticky top-0">
                 <tr>
