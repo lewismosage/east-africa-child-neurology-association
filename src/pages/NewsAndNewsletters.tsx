@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "../../supabaseClient"; 
 
 const NewsAndNewsletters = () => {
   // State for expanded news items
@@ -7,45 +8,45 @@ const NewsAndNewsletters = () => {
   // State for expanded newsletters
   const [expandedNewsletter, setExpandedNewsletter] = useState<{ [key: number]: boolean }>({});
 
-  // Sample news data
-  const newsItems = [
-    {
-      id: 1,
-      type: "News",
-      title: "EACNA Annual Conference Success",
-      date: "March 15, 2024",
-      summary: "Over 200 specialists gathered to discuss advances in child neurology care...",
-      fullContent:
-        "The EACNA Annual Conference 2024 was a resounding success, with over 200 specialists from across East Africa and beyond gathering to discuss the latest advances in child neurology care. Key topics included innovative treatments for epilepsy, advancements in neuroimaging, and strategies for improving access to neurological care in underserved regions. The event also featured workshops and networking sessions, fostering collaboration among healthcare professionals.",
-    },
-    {
-      id: 2,
-      type: "Press Release",
-      title: "New Research Initiative Launched",
-      date: "March 10, 2024",
-      summary: "EACNA announces new research collaboration with international partners...",
-      fullContent:
-        "EACNA has launched a groundbreaking research initiative in collaboration with international partners. This initiative aims to address critical gaps in child neurology research, focusing on conditions such as cerebral palsy, autism spectrum disorders, and neonatal brain injuries. The project will involve multi-center clinical trials and the development of new diagnostic tools, with the goal of improving outcomes for children with neurological disorders.",
-    },
-  ];
+  // State for fetched news and newsletters
+  const [newsItems, setNewsItems] = useState<any[]>([]);
+  const [newsletters, setNewsletters] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sample newsletter data
-  const newsletters = [
-    {
-      id: 1,
-      title: "March 2024 Newsletter",
-      description: "Latest updates and achievements",
-      fullContent:
-        "In this issue, we highlight the success of the EACNA Annual Conference 2024, share updates on our new research initiative, and provide a preview of upcoming events. We also feature interviews with leading experts in child neurology and showcase the latest publications from our members.",
-    },
-    {
-      id: 2,
-      title: "February 2024 Newsletter",
-      description: "Conference special edition",
-      fullContent:
-        "This special edition of the newsletter is dedicated to the EACNA Annual Conference 2024. It includes detailed summaries of keynote presentations, highlights from workshops, and testimonials from attendees. We also provide a sneak peek at the research findings presented at the conference.",
-    },
-  ];
+  // Fetch news and newsletters from Supabase
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch news and press releases
+        const { data: newsData, error: newsError } = await supabase
+          .from("news_updates")
+          .select("*")
+          .in("type", ["news", "press-release"]); // Filter by type
+
+        if (newsError) throw newsError;
+
+        // Fetch newsletters
+        const { data: newsletterData, error: newsletterError } = await supabase
+          .from("news_updates")
+          .select("*")
+          .eq("type", "newsletter"); // Filter by type
+
+        if (newsletterError) throw newsletterError;
+
+        // Set the fetched data
+        setNewsItems(newsData || []);
+        setNewsletters(newsletterData || []);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Failed to fetch data. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Toggle full content for news
   const toggleNews = (id: number) => {
@@ -63,6 +64,14 @@ const NewsAndNewsletters = () => {
     }));
   };
 
+  if (loading) {
+    return <div className="text-center py-12">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-12 text-red-600">{error}</div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-7xl">
@@ -76,12 +85,14 @@ const NewsAndNewsletters = () => {
                 <div key={news.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                   <div className="p-6">
                     <span className="inline-block px-3 py-1 text-sm font-semibold text-primary bg-lavender bg-opacity-20 rounded-full mb-4">
-                      {news.type}
+                      {news.type === "press-release" ? "Press Release" : "News"}
                     </span>
                     <h3 className="text-xl font-semibold mb-2">{news.title}</h3>
-                    <p className="text-gray-600 mb-2">{news.date}</p>
+                    <p className="text-gray-600 mb-2">
+                      {new Date(news.date).toLocaleDateString()}
+                    </p>
                     <p className="text-gray-700">
-                      {expandedNews[news.id] ? news.fullContent : news.summary}
+                      {expandedNews[news.id] ? news.content : `${news.content.substring(0, 150)}...`}
                     </p>
                     <button
                       onClick={() => toggleNews(news.id)}
@@ -124,9 +135,11 @@ const NewsAndNewsletters = () => {
                           </svg>
                           <div>
                             <p className="font-semibold">{newsletter.title}</p>
-                            <p className="text-sm text-gray-600">{newsletter.description}</p>
+                            <p className="text-sm text-gray-600">
+                              Published on {new Date(newsletter.date).toLocaleDateString()}
+                            </p>
                             {expandedNewsletter[newsletter.id] && (
-                              <p className="text-gray-700 mt-2">{newsletter.fullContent}</p>
+                              <p className="text-gray-700 mt-2">{newsletter.content}</p>
                             )}
                             <button
                               onClick={() => toggleNewsletter(newsletter.id)}
