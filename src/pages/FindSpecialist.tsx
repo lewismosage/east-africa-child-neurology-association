@@ -174,38 +174,40 @@ const FindSpecialist = () => {
           ) : filteredSpecialists.length === 0 ? (
             <p className="text-center">No specialists found.</p>
           ) : (
-            <table className="min-w-full">
-              <thead>
-                <tr>
-                  <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
-                  <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialization</th>
-                  <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                  <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredSpecialists.map((specialist) => (
-                  <tr key={specialist.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {specialist.prefix} {specialist.full_name} {/* Combine prefix and name */}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {specialist.specialization}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {specialist.location}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <a href={`tel:${specialist.phone}`} className="text-purple-600 hover:text-purple-900">📞 Call Now</a>
-                      <span className="mx-2">|</span>
-                      <a href={`mailto:${specialist.email}`} className="text-purple-600 hover:text-purple-900">✉️ Email Now</a>
-                    </td>
+            <div className="overflow-x-auto"> {/* Make the table scrollable horizontally */}
+              <table className="min-w-full">
+                <thead>
+                  <tr>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialization</th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredSpecialists.map((specialist) => (
+                    <tr key={specialist.id}>
+                      <td className="px-6 py-4 whitespace-normal">
+                        <div className="text-sm font-medium text-gray-900">
+                          {specialist.prefix} {specialist.full_name} {/* Combine prefix and name */}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">
+                        {specialist.specialization}
+                      </td>
+                      <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">
+                        {specialist.location}
+                      </td>
+                      <td className="px-6 py-4 whitespace-normal text-sm font-medium">
+                        <a href={`tel:${specialist.phone}`} className="text-purple-600 hover:text-purple-900">📞 Call Now</a>
+                        <span className="mx-2">|</span>
+                        <a href={`mailto:${specialist.email}`} className="text-purple-600 hover:text-purple-900">✉️ Email Now</a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </section>
       )}

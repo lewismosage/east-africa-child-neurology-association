@@ -70,7 +70,7 @@ export function Membership() {
       price: "KSH 20,000/year",
       description: "For established healthcare professionals",
       features: [
-        "All Associate benefits",
+        "All Student Member benefits",
         "Voting rights",
         "Research collaboration opportunities",
         "Committee participation",
@@ -82,7 +82,7 @@ export function Membership() {
       price: "KSH 30,000/year",
       description: "For senior professionals and leaders",
       features: [
-        "All Full Member benefits",
+        "All Associate Member benefits",
         "Leadership opportunities",
         "Mentorship program access",
         "Priority speaking opportunities",
