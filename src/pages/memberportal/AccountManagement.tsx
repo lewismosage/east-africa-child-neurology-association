@@ -112,7 +112,7 @@ const AccountManagement = () => {
               {/* Actions */}
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                 <button
-                  onClick={() => navigate("/membership/renewal-&-upgrade")}
+                  onClick={() => navigate("/membership/membership-renewal-&-upgrade")}
                   className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   <RefreshCw className="mr-2 h-5 w-5" /> Renewal & Upgrade

@@ -26,7 +26,7 @@ const CallForAbstracts = () => {
               Include title, author(s), institution, and contact email.
             </li>
             <li>
-              Email submissions before [Deadline Date].
+              Email submissions before Deadline Date.
             </li>
           </ul>
 

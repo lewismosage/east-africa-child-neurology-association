@@ -17,7 +17,7 @@ const EACNAPolicies = () => {
            EACNA General Membership Information
           </h3>
           <p className="text-gray-700 mb-4">
-            As a member of the East African Clinical Neuroscience Association (EACNA), you play a crucial role in advancing neuroscience research, clinical practice, and professional development across the region. EACNA represents your interests, fosters professional growth, and advocates for neuroscience excellence.
+            As a member of the East African Child Neuroscience Association (EACNA), you play a crucial role in advancing neuroscience research, clinical practice, and professional development across the region. EACNA represents your interests, fosters professional growth, and advocates for neuroscience excellence.
           </p>
           <p className="text-gray-700 mb-4">
             By joining EACNA, you gain access to exclusive research, networking opportunities, career resources, conferences, and policy updates that shape the future of neuroscience in East Africa.
