@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Mail, Phone, MapPin, Clock, Send } from "lucide-react";
-import emailjs from "@emailjs/browser";
+import { supabase } from "../../supabaseClient"; 
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -20,25 +20,31 @@ const ContactForm = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Replace with EmailJS service details
-    const serviceID = "service_74d8nvl";
-    const templateID = "template_4p30evx";
-    const publicKey = "rIk2qL2z7PbpZRi0S";
+    try {
+      // Insert the form data into the queries table
+      const { data, error } = await supabase
+        .from("queries") // Use the combined table
+        .insert([{
+          name: formData.name,
+          email: formData.email,
+          topic: formData.subject,
+          message: formData.message,
+          type: "contact_us_queries", // Set the type to differentiate the query
+          status: "pending", // Default status for new queries
+        }]);
 
-    emailjs
-      .send(serviceID, templateID, formData, publicKey)
-      .then((response) => {
-        console.log("SUCCESS!", response.status, response.text);
-        setStatus("Message sent successfully!");
-        setFormData({ name: "", email: "", subject: "", message: "" });
-      })
-      .catch((err) => {
-        console.error("FAILED...", err);
-        setStatus("Failed to send message. Please try again.");
-      });
+      if (error) throw error;
+
+      // Show success message
+      setStatus("Message sent successfully!");
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      setStatus("Failed to send message. Please try again.");
+    }
   };
 
   return (
@@ -151,16 +157,16 @@ export function Contact() {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="relative py-24 bg-gradient-to-r from-[#4A154B] via-[#2E1A47] to-[#1E3A8A]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-6">Contact Us</h1>
-          <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-            Get in touch with our team for inquiries, support, or
-            collaboration opportunities.
-          </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-white mb-6">Contact Us</h1>
+            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+              Get in touch with our team for inquiries, support, or
+              collaboration opportunities.
+            </p>
+          </div>
         </div>
       </div>
-    </div>
 
       {/* Contact Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16">
@@ -204,10 +210,10 @@ export function Contact() {
                         Email Us
                       </h3>
                       <p className="mt-1 text-gray-600">
-                      <a href="mailto:info@eacna.org" className="text-blue-500 hover:underline">
-                        info@eacna.org
-                      </a>
-                    </p>
+                        <a href="mailto:info@eacna.org" className="text-blue-500 hover:underline">
+                          info@eacna.org
+                        </a>
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-start">

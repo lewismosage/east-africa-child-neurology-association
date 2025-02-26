@@ -32,7 +32,7 @@ export function AdminLogin() {
         localStorage.setItem('adminAuth', 'true');
 
         // Step 4: Redirect to the admin dashboard
-        navigate('/admin/resources');
+        navigate('/admin/admin-dashboard');
       } else {
         setError('You do not have admin privileges.');
       }

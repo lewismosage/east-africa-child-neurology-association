@@ -43,6 +43,8 @@ import SpecialistForm from "./pages/SpecialistForm";
 import TermsAndConditions from "./pages/Terms&Conditions";
 import Article from "./pages/Article";
 import NewsletterManager from "./pages/admin/NewsletterManager";
+import ManageQueries from "./pages/admin/ManageQueries";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 
 const App = () => {
@@ -106,6 +108,8 @@ const App = () => {
           <Route path="events" element={<ManageEvents />} />
           <Route path="payment-verification" element={<PaymentVerification />} />
           <Route path="newsletter-manager" element={<NewsletterManager />} />
+          <Route path="manage-queries" element={<ManageQueries />} />
+          <Route path="admin-dashboard" element={<AdminDashboard />} />
           </Route>
       </Routes> 
       <Footer />

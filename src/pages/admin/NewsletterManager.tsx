@@ -8,6 +8,7 @@ import ConfirmationModal from "../../pages/ConfirmationModalProps";
 interface Subscriber {
   id: string;
   email: string;
+  name: string;
   subscription_date: string;
 }
 
@@ -37,7 +38,7 @@ const NewsletterManager = () => {
   const [newNewsTitle, setNewNewsTitle] = useState("");
   const [newNewsContent, setNewNewsContent] = useState("");
   const [newNewsType, setNewNewsType] = useState("news");
-  const [newNewsDate, setNewNewsDate] = useState<Date | null>(new Date()); // State for the date picker
+  const [newNewsDate, setNewNewsDate] = useState<Date | null>(new Date()); 
   const [buttonText, setButtonText] = useState("Add News"); // State for button text
 
   // State for confirmation modal
@@ -137,14 +138,17 @@ const NewsletterManager = () => {
   const handleSendNewsletter = async () => {
     setLoading(true);
     try {
-      const serviceID = "YOUR_EMAILJS_SERVICE_ID";
-      const templateID = "YOUR_EMAILJS_TEMPLATE_ID";
-      const publicKey = "YOUR_EMAILJS_PUBLIC_KEY";
+      const serviceID = "service_74d8nvl";
+      const templateID = "template_kem5xpg";
+      const publicKey = "rIk2qL2z7PbpZRi0S";
 
-      const emails = subscribers.map((subscriber) => subscriber.email);
-
-      const emailPromises = emails.map((email) =>
-        emailjs.send(serviceID, templateID, { to_email: email, subject, message }, publicKey)
+      const emailPromises = subscribers.map((subscriber) =>
+        emailjs.send(serviceID, templateID, {
+          to_email: subscriber.email,   
+          user_name: subscriber.name || "Valued Subscriber",
+          subject: subject,
+          message: message,
+        }, publicKey)
       );
 
       await Promise.all(emailPromises);
@@ -160,6 +164,7 @@ const NewsletterManager = () => {
       setLoading(false);
     }
   };
+
 
   // Handle adding/editing news
   const handleSaveNews = async () => {

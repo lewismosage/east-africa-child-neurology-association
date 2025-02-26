@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../../supabaseClient"; // Adjust the import path as needed
+import { supabase } from "../../supabaseClient"; 
 
 // Define the type for a specialist
 interface Specialist {
@@ -13,7 +13,7 @@ interface Specialist {
   location: string;
   qualification_documents: string;
   terms_accepted: boolean;
-  status: string; // "pending", "approved", "rejected"
+  status: string; 
   created_at: string;
 }
 

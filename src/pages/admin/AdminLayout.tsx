@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { FileText, Calendar, CreditCard, Settings, LogOut, Menu, X, ChevronLeft, ChevronRight, Newspaper } from "lucide-react";
+import { FileText, Calendar, CreditCard, Settings, LogOut, Menu, X, ChevronLeft, ChevronRight, Newspaper,ListChecks,Home } from "lucide-react";
 import { RequireAuth } from "../../components/admin/RequireAuth";
 
 const sidebarItems = [
+  { icon: Home, label: "Dashboard", path: "/admin/admin-dashboard" },
   { icon: FileText, label: "Specialist Directory", path: "/admin/specialist-approval" },
-  { icon: Calendar, label: "Manage Events", path: "/admin/events" },
   { icon: CreditCard, label: "Payment Processing", path: "/admin/payment-verification" },
   { icon: FileText, label: "Articles & Publications Moderation", path: "/admin/artcles-approval" },
+  { icon: Calendar, label: "Manage Events", path: "/admin/events" },
+  { icon: ListChecks, label: "Manage Queries", path: "/admin/manage-queries" },
   { icon: Newspaper, label: "Newsletter Manager", path: "/admin/newsletter-manager" },
 ];
 
@@ -19,7 +21,7 @@ export function AdminLayout() {
 
   const handleSignOut = () => {
     localStorage.removeItem("authToken");
-    navigate("/admin/login");
+    navigate("/");
   };
 
   const toggleSidebar = () => {

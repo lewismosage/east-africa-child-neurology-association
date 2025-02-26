@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FileText, Video, BookOpen, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import emailjs from "@emailjs/browser"; // For sending emails
+import { supabase } from "../../supabaseClient"; 
 
 const resources = [
   {
@@ -36,9 +36,9 @@ const resources = [
 
 export function QueryForm() {
   const [topic, setTopic] = useState("");
-  const [email, setEmail] = useState(""); // New state for email
-  const [question, setQuestion] = useState<string>("");
-  const [status, setStatus] = useState(""); // To show success/error messages
+  const [email, setEmail] = useState("");
+  const [question, setQuestion] = useState("");
+  const [status, setStatus] = useState("");
 
   const handleTopicChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setTopic(event.target.value);
@@ -48,41 +48,36 @@ export function QueryForm() {
     setEmail(event.target.value);
   };
 
-  const handleQuestionChange = (
-    event: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    if (event && event.target) {
-      setQuestion(event.target.value);
-    }
+  const handleQuestionChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setQuestion(event.target.value);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Replace with your EmailJS service details
-    const serviceID = "service_74d8nvl";
-    const templateID = "template_4p30evx";
-    const publicKey = "rIk2qL2z7PbpZRi0S";
+    try {
+      // Insert the form data into the queries table
+      const { data, error } = await supabase
+        .from("queries")
+        .insert([{
+          topic,
+          email,
+          question,
+          type: "healthcare_queries", // Set the type to differentiate the query
+          status: "pending", // Default status for new queries
+        }]);
 
-    const formData = {
-      topic,
-      email,
-      question,
-    };
+      if (error) throw error;
 
-    emailjs
-      .send(serviceID, templateID, formData, publicKey)
-      .then((response) => {
-        console.log("SUCCESS!", response.status, response.text);
-        setStatus("Query submitted successfully!");
-        setTopic("");
-        setEmail("");
-        setQuestion("");
-      })
-      .catch((err) => {
-        console.error("FAILED...", err);
-        setStatus("Failed to submit query. Please try again.");
-      });
+      // Show success message
+      setStatus("Query submitted successfully!");
+      setTopic("");
+      setEmail("");
+      setQuestion("");
+    } catch (err) {
+      console.error("Error submitting query:", err);
+      setStatus("Failed to submit query. Please try again.");
+    }
   };
 
   return (
