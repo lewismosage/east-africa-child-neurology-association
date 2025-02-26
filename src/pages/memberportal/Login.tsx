@@ -29,8 +29,6 @@ export function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log("Form Data:", formData); // Debugging
-
     // Step 1: Sign in the user
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: formData.email,
@@ -38,12 +36,9 @@ export function Login() {
     });
 
     if (authError) {
-      console.error("Auth Error:", authError); // Debugging
       setStatus(`Login failed: ${authError.message}`);
       return;
     }
-
-    console.log("Auth Data:", authData); // Debugging
 
     const userId = authData.user?.id;
 
@@ -63,8 +58,6 @@ export function Login() {
       if (memberError) {
         throw memberError;
       }
-
-      console.log("Member Data:", memberData); // Debugging
 
       // Step 3: Check if member data exists
       if (!memberData) {

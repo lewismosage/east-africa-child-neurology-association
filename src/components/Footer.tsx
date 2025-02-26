@@ -16,7 +16,7 @@ export function Footer() {
       { name: "Research & Publications", href: "publication/research-&-publications" },
       { name: "Events", href: "/events/upcoming-events" },
       { name: "Contact", href: "/contact" },
-      { name: "Member Portal", href: "/membership/login" },
+      { name: "Member Portal", href: "memberportal/portaldashboard" },
     ],
     social: [
       { name: "Facebook", href: "#", icon: Facebook },

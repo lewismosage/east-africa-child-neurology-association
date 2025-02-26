@@ -13,7 +13,7 @@ const quickAccessLinks = [
 ];
 
 interface User {
-  id: string; // Add user ID
+  id: string;
   user_metadata: {
     full_name: string;
   };
@@ -23,7 +23,7 @@ interface Project {
   title: string;
   status: string;
   deadline: string;
-  user_id: string; // Add user_id to Project interface
+  user_id: string;
 }
 
 const Dashboard = () => {
@@ -71,7 +71,7 @@ const Dashboard = () => {
 
         // Set user data
         setUser({
-          id: userData.user.id, // Include user ID
+          id: userData.user.id,
           user_metadata: {
             full_name: userData.user.user_metadata.full_name,
           },
@@ -81,7 +81,7 @@ const Dashboard = () => {
         const { data: projectsData, error: projectsError } = await supabase
           .from("projects")
           .select("*")
-          .eq("user_id", userData.user.id); // Filter by user_id
+          .eq("user_id", userData.user.id);
 
         if (projectsError) {
           console.error("Error fetching projects:", projectsError);
