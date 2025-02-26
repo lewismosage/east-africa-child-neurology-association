@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../../../supabaseClient";
 import emailjs from "@emailjs/browser";
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css"; 
+import "react-datepicker/dist/react-datepicker.css";
 import ConfirmationModal from "../../pages/ConfirmationModalProps"; 
 
 interface Subscriber {
