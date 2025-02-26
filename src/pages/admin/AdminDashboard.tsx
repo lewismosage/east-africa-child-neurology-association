@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../../../supabaseClient"; // Adjust the import path
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 
 interface Query {
   id: string;
@@ -18,6 +19,7 @@ interface Member {
   name: string;
   email: string;
   created_at: string;
+  payment_status: string; // Add payment_status to the Member interface
 }
 
 interface Specialist {
@@ -40,8 +42,10 @@ const AdminDashboard = () => {
   const [newMembersToday, setNewMembersToday] = useState<Member[]>([]);
   const [pendingSpecialists, setPendingSpecialists] = useState<Specialist[]>([]);
   const [activeProjects, setActiveProjects] = useState<Project[]>([]);
+  const [pendingApplications, setPendingApplications] = useState<number>(0); // Combined pending applications
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   // Fetch Queries (both contact_us_queries and healthcare_queries)
   const fetchQueries = async () => {
@@ -68,7 +72,8 @@ const AdminDashboard = () => {
         .from("members")
         .select("*")
         .gte("created_at", `${today}T00:00:00`) // Filter members created today
-        .lte("created_at", `${today}T23:59:59`);
+        .lte("created_at", `${today}T23:59:59`)
+        .neq("payment_status", "approved"); // Filter members with payment_status not approved
 
       if (error) throw error;
       setNewMembersToday(data || []);
@@ -112,6 +117,33 @@ const AdminDashboard = () => {
     }
   };
 
+  // Fetch Pending Applications (Corporate Partnerships + Volunteers)
+  const fetchPendingApplications = async () => {
+    try {
+      // Fetch pending corporate partnerships
+      const { count: partnershipCount, error: partnershipError } = await supabase
+        .from("corporate_partnerships")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending"); // Filter pending partnerships
+
+      if (partnershipError) throw partnershipError;
+
+      // Fetch pending volunteers
+      const { count: volunteerCount, error: volunteerError } = await supabase
+        .from("volunteers")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending"); // Filter pending volunteers
+
+      if (volunteerError) throw volunteerError;
+
+      // Combine the counts
+      setPendingApplications((partnershipCount || 0) + (volunteerCount || 0));
+    } catch (err) {
+      console.error("Error fetching pending applications:", err);
+      setError("Failed to fetch pending applications.");
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -119,6 +151,7 @@ const AdminDashboard = () => {
       await fetchNewMembersToday();
       await fetchPendingSpecialists();
       await fetchActiveProjects();
+      await fetchPendingApplications();
       setLoading(false);
     };
 
@@ -170,7 +203,7 @@ const AdminDashboard = () => {
 
         {/* Pending Specialists Card */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-xl font-semibold text-gray-800">Pending Specialists</h3>
+          <h3 className="text-xl font-semibold text-gray-800">Pending Specialists Applications</h3>
           <p className="text-3xl font-bold text-primary mt-2">{pendingSpecialists.length}</p>
           <p className="text-sm text-gray-600 mt-2">Review and approve applications.</p>
         </div>
@@ -180,6 +213,16 @@ const AdminDashboard = () => {
           <h3 className="text-xl font-semibold text-gray-800">Active Research Articles</h3>
           <p className="text-3xl font-bold text-primary mt-2">{activeProjects.length}</p>
           <p className="text-sm text-gray-600 mt-2">Review and approve Research Articles.</p>
+        </div>
+
+        {/* Pending Applications Card */}
+        <div
+          className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => navigate("/admin/admin-dashboard/corporate-volunteer-applications")} 
+        >
+          <h3 className="text-xl font-semibold text-gray-800">Pending Applications</h3>
+          <p className="text-3xl font-bold text-primary mt-2">{pendingApplications}</p>
+          <p className="text-sm text-gray-600 mt-2">Review corporate and volunteer applications.</p>
         </div>
       </div>
     </div>

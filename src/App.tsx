@@ -45,6 +45,9 @@ import Article from "./pages/Article";
 import NewsletterManager from "./pages/admin/NewsletterManager";
 import ManageQueries from "./pages/admin/ManageQueries";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import { CorporatePartnership } from "./pages/CorporatePartnership";
+import { VolunteerSupport } from "./pages/VolunteerSupport";
+import CorporateAndVolunteer from "./pages/admin/CorporateAndVolunteer";
 
 
 const App = () => {
@@ -76,7 +79,7 @@ const App = () => {
         <Route path="/memberportal/account-management" element={<AccountManagement />} />
         <Route path="/memberportal/payment-processing" element={<PaymentProcessing />} />
         <Route path="/membership/eacna-membership-&-policies" element={<EACNAPolicies />} />
-        <Route path="/membership/renewal-&-upgrade" element={<RenewalAndUpgrades />} />
+        <Route path="/membership/membership-renewal-&-upgrade" element={<RenewalAndUpgrades />} />
         <Route path="/media-center/faqs" element={<FAQs />} />
         <Route path="media-center/news-and-newsletters" element={<NewsAndNewsletters />} />
         <Route path="/national-policies" element={<NationalPolicies />} />
@@ -87,6 +90,8 @@ const App = () => {
         <Route path="/specialist-form" element={<SpecialistForm />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         <Route path="/article/:id" element={<Article />} />
+        <Route path="/about-us/support-our-cause/corporate-partnership" element={<CorporatePartnership />} />
+        <Route path="/about-us/support-our-cause/volunteer-support" element={<VolunteerSupport  />} />
 
          {/* Admin Login Page */}
          <Route path="/admin/login" element={<AdminLogin />} />
@@ -110,6 +115,7 @@ const App = () => {
           <Route path="newsletter-manager" element={<NewsletterManager />} />
           <Route path="manage-queries" element={<ManageQueries />} />
           <Route path="admin-dashboard" element={<AdminDashboard />} />
+          <Route path="admin-dashboard/corporate-volunteer-applications" element={<CorporateAndVolunteer />} />
           </Route>
       </Routes> 
       <Footer />

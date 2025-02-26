@@ -39,7 +39,7 @@ const Navbar = () => {
       "Member Portal & Login",
       "Become a Member",
       "EACNA Membership & Policies",
-      "Renewal & Upgrade",
+      "Membership Renewal & Upgrade",
     ],
     Publication: ["Healthcare Policies & Guidelines", "Research & Publications"],
     "Media Center": ["News And Newsletters", "FAQs"],

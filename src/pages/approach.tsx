@@ -45,14 +45,12 @@ export function Approach() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="relative py-24 bg-gradient-to-r from-blue-900 to-blue-800">
+      <div className="relative py-24 bg-gradient-to-r from-[#4A154B] via-[#2E1A47] to-[#1E3A8A]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-6">
-              Our Approach
-            </h1>
+            <h1 className="text-4xl font-bold text-white mb-6">Our Approach</h1>
             <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-              A comprehensive strategy to transform child neurology care in East Africa
+            A comprehensive strategy to transform child neurology care in East Africa.
             </p>
           </div>
         </div>

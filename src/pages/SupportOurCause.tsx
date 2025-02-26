@@ -3,7 +3,7 @@ import { Heart, Gift, Users, Coins, Calendar, HandHeart, Handshake } from 'lucid
 
 export function SupportOurCause() {
   useEffect(() => {
-    window.scrollTo(0, 0); // Ensures the page opens at the top
+    window.scrollTo(0, 0); 
   }, []);
   const ways = [
     {
@@ -18,14 +18,14 @@ export function SupportOurCause() {
       title: "Corporate Partnership",
       description: "Partner with us to create lasting impact",
       action: "Become a Partner",
-      href: "#partner"
+      href: "/about-us/support-our-cause/corporate-partnership"
     },
     {
       icon: Handshake,
       title: "Volunteer Support",
       description: "Join or contribute to volunteer support initiatives",
       action: "Get Involved",
-      href: "#volunteer"
+      href: "/about-us/support-our-cause/volunteer-support"
     }
   ];
 
@@ -33,19 +33,19 @@ export function SupportOurCause() {
     {
       title: "Medical Equipment",
       description: "Help us provide essential medical equipment to hospitals and clinics",
-      amount: "$10,000",
+      amount: "Ksh 10,000,000",
       progress: 65
     },
     {
       title: "Training Programs",
       description: "Support professional development programs for healthcare workers",
-      amount: "$25,000",
+      amount: "Ksh 25,000,000",
       progress: 40
     },
     {
       title: "Research Initiatives",
       description: "Fund critical research in child neurology",
-      amount: "$50,000",
+      amount: "Ksh 5,000,000",
       progress: 25
     }
   ];
@@ -178,13 +178,14 @@ export function SupportOurCause() {
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 sm:text-sm">$</span>
+                    <span className="text-gray-500 sm:text-sm">
+                    </span>
                   </div>
                   <input
                     type="number"
                     id="amount"
                     className="pl-7 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="0.00"
+                    placeholder="Ksh 0.00"
                   />
                 </div>
               </div>
