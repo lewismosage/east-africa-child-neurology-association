@@ -13,6 +13,9 @@ export function CorporatePartnership() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
+  // State to manage expanded tiers
+  const [expandedTier, setExpandedTier] = useState<string | null>(null);
+
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -55,6 +58,15 @@ export function CorporatePartnership() {
       setError('Failed to submit the form. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle expanding/collapsing tiers
+  const toggleTier = (tier: string) => {
+    if (expandedTier === tier) {
+      setExpandedTier(null); // Collapse if already expanded
+    } else {
+      setExpandedTier(tier); // Expand the clicked tier
     }
   };
 
@@ -123,8 +135,23 @@ export function CorporatePartnership() {
               <p className="text-gray-600 mb-6">
                 Exclusive recognition and premium benefits for top-tier partners.
               </p>
-              <button className="px-6 py-3 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors">
-                Learn More
+              {expandedTier === 'gold' && (
+                <div className="mt-4 text-left">
+                  <p className="text-gray-600">
+                    <strong>Benefits:</strong>
+                  </p>
+                  <ul className="list-disc list-inside text-gray-600">
+                    <li>Logo placement on all marketing materials</li>
+                    <li>Exclusive access to VIP events</li>
+                    <li>Priority recognition in newsletters and social media</li>
+                  </ul>
+                </div>
+              )}
+              <button
+                onClick={() => toggleTier('gold')}
+                className="mt-6 px-6 py-3 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors"
+              >
+                {expandedTier === 'gold' ? 'Show Less' : 'Learn More'}
               </button>
             </div>
 
@@ -134,8 +161,23 @@ export function CorporatePartnership() {
               <p className="text-gray-600 mb-6">
                 Significant recognition and impactful benefits for mid-tier partners.
               </p>
-              <button className="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
-                Learn More
+              {expandedTier === 'silver' && (
+                <div className="mt-4 text-left">
+                  <p className="text-gray-600">
+                    <strong>Benefits:</strong>
+                  </p>
+                  <ul className="list-disc list-inside text-gray-600">
+                    <li>Logo placement on select marketing materials</li>
+                    <li>Access to exclusive events</li>
+                    <li>Recognition in newsletters and social media</li>
+                  </ul>
+                </div>
+              )}
+              <button
+                onClick={() => toggleTier('silver')}
+                className="mt-6 px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+              >
+                {expandedTier === 'silver' ? 'Show Less' : 'Learn More'}
               </button>
             </div>
 
@@ -145,8 +187,23 @@ export function CorporatePartnership() {
               <p className="text-gray-600 mb-6">
                 Recognition and benefits for community-focused partners.
               </p>
-              <button className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                Learn More
+              {expandedTier === 'community' && (
+                <div className="mt-4 text-left">
+                  <p className="text-gray-600">
+                    <strong>Benefits:</strong>
+                  </p>
+                  <ul className="list-disc list-inside text-gray-600">
+                    <li>Recognition on our website</li>
+                    <li>Access to community events</li>
+                    <li>Opportunities for collaboration</li>
+                  </ul>
+                </div>
+              )}
+              <button
+                onClick={() => toggleTier('community')}
+                className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                {expandedTier === 'community' ? 'Show Less' : 'Learn More'}
               </button>
             </div>
           </div>

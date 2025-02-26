@@ -48,6 +48,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import { CorporatePartnership } from "./pages/CorporatePartnership";
 import { VolunteerSupport } from "./pages/VolunteerSupport";
 import CorporateAndVolunteer from "./pages/admin/CorporateAndVolunteer";
+import DonationHistory from "./pages/admin/DonationHistory";
 
 
 const App = () => {
@@ -116,6 +117,7 @@ const App = () => {
           <Route path="manage-queries" element={<ManageQueries />} />
           <Route path="admin-dashboard" element={<AdminDashboard />} />
           <Route path="admin-dashboard/corporate-volunteer-applications" element={<CorporateAndVolunteer />} />
+          <Route path="admin-dashboard/donation-history" element={<DonationHistory />} />
           </Route>
       </Routes> 
       <Footer />

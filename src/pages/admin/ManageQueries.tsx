@@ -21,6 +21,8 @@ const ManageQueries = () => {
   const [selectedQuery, setSelectedQuery] = useState<Query | null>(null);
   const [responseMessage, setResponseMessage] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<string | null>(null); // Track the selected message for modal
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false); // Track modal visibility
 
   // Fetch Queries
   const fetchQueries = async () => {
@@ -85,6 +87,18 @@ const ManageQueries = () => {
       console.error("Error sending response:", err);
       setStatusMessage("Failed to send response. Please try again.");
     }
+  };
+
+  // Open modal with the selected message
+  const handleViewMessage = (message: string) => {
+    setSelectedMessage(message);
+    setIsMessageModalOpen(true);
+  };
+
+  // Close modal
+  const closeMessageModal = () => {
+    setIsMessageModalOpen(false);
+    setSelectedMessage(null);
   };
 
   useEffect(() => {
@@ -188,33 +202,69 @@ const ManageQueries = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {queries.map((query) => (
-                  <tr key={query.id}>
-                    <td className="px-6 py-4 text-sm text-gray-900">{query.type}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{query.topic}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{query.name || "-"}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{query.email}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {query.type === "contact_us_queries" ? query.message : query.question}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {new Date(query.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      <button
-                        onClick={() => handleRespond(query)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Respond
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {queries.map((query) => {
+                  const messageOrQuestion =
+                    query.type === "contact_us_queries" ? query.message : query.question;
+                  const isLongMessage = messageOrQuestion && messageOrQuestion.length > 50;
+
+                  return (
+                    <tr key={query.id}>
+                      <td className="px-6 py-4 text-sm text-gray-900">{query.type}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{query.topic}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{query.name || "-"}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{query.email}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {isLongMessage ? (
+                          <>
+                            {messageOrQuestion.slice(0, 50)}...
+                            <button
+                              onClick={() => handleViewMessage(messageOrQuestion)}
+                              className="text-blue-600 hover:text-blue-900 ml-2"
+                            >
+                              View More
+                            </button>
+                          </>
+                        ) : (
+                          messageOrQuestion
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {new Date(query.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        <button
+                          onClick={() => handleRespond(query)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          Respond
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       </section>
+
+      {/* Modal for Viewing Full Message */}
+      {isMessageModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Full Message</h3>
+            <p className="text-gray-600">{selectedMessage}</p>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closeMessageModal}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

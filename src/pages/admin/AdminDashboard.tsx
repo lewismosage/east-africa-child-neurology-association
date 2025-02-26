@@ -42,9 +42,12 @@ const AdminDashboard = () => {
   const [newMembersToday, setNewMembersToday] = useState<Member[]>([]);
   const [pendingSpecialists, setPendingSpecialists] = useState<Specialist[]>([]);
   const [activeProjects, setActiveProjects] = useState<Project[]>([]);
-  const [pendingApplications, setPendingApplications] = useState<number>(0); // Combined pending applications
+  const [newApplicationsToday, setNewApplicationsToday] = useState<number>(0); // New applications today
+  const [totalDonations, setTotalDonations] = useState<number>(0); // Total donations
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<string | null>(null); // Track the selected message
+  const [isModalOpen, setIsModalOpen] = useState(false); // Track modal visibility
   const navigate = useNavigate(); // Initialize useNavigate
 
   // Fetch Queries (both contact_us_queries and healthcare_queries)
@@ -117,31 +120,62 @@ const AdminDashboard = () => {
     }
   };
 
-  // Fetch Pending Applications (Corporate Partnerships + Volunteers)
-  const fetchPendingApplications = async () => {
+  // Fetch New Applications for Today (Corporate Partnerships + Volunteers)
+  const fetchNewApplicationsToday = async () => {
     try {
-      // Fetch pending corporate partnerships
+      const today = new Date().toISOString().split("T")[0]; // Get today's date
+
+      // Fetch new corporate partnerships today
       const { count: partnershipCount, error: partnershipError } = await supabase
         .from("corporate_partnerships")
         .select("*", { count: "exact", head: true })
-        .eq("status", "pending"); // Filter pending partnerships
+        .gte("created_at", `${today}T00:00:00`) // Filter applications created today
+        .lte("created_at", `${today}T23:59:59`);
 
       if (partnershipError) throw partnershipError;
 
-      // Fetch pending volunteers
+      // Fetch new volunteers today
       const { count: volunteerCount, error: volunteerError } = await supabase
         .from("volunteers")
         .select("*", { count: "exact", head: true })
-        .eq("status", "pending"); // Filter pending volunteers
+        .gte("created_at", `${today}T00:00:00`) // Filter applications created today
+        .lte("created_at", `${today}T23:59:59`);
 
       if (volunteerError) throw volunteerError;
 
       // Combine the counts
-      setPendingApplications((partnershipCount || 0) + (volunteerCount || 0));
+      setNewApplicationsToday((partnershipCount || 0) + (volunteerCount || 0));
     } catch (err) {
-      console.error("Error fetching pending applications:", err);
-      setError("Failed to fetch pending applications.");
+      console.error("Error fetching new applications today:", err);
+      setError("Failed to fetch new applications today.");
     }
+  };
+
+  // Fetch Total Donations
+  const fetchTotalDonations = async () => {
+    try {
+      const { count, error } = await supabase
+        .from("donations")
+        .select("*", { count: "exact", head: true });
+
+      if (error) throw error;
+      setTotalDonations(count || 0);
+    } catch (err) {
+      console.error("Error fetching total donations:", err);
+      setError("Failed to fetch total donations.");
+    }
+  };
+
+  // Open modal with the selected message
+  const handleViewMessage = (message: string) => {
+    setSelectedMessage(message);
+    setIsModalOpen(true);
+  };
+
+  // Close modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedMessage(null);
   };
 
   useEffect(() => {
@@ -151,7 +185,8 @@ const AdminDashboard = () => {
       await fetchNewMembersToday();
       await fetchPendingSpecialists();
       await fetchActiveProjects();
-      await fetchPendingApplications();
+      await fetchNewApplicationsToday();
+      await fetchTotalDonations();
       setLoading(false);
     };
 
@@ -215,16 +250,44 @@ const AdminDashboard = () => {
           <p className="text-sm text-gray-600 mt-2">Review and approve Research Articles.</p>
         </div>
 
-        {/* Pending Applications Card */}
+        {/* New Applications Today Card */}
         <div
           className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => navigate("/admin/admin-dashboard/corporate-volunteer-applications")} 
+          onClick={() => navigate("/admin/admin-dashboard/corporate-volunteer-applications")}
         >
-          <h3 className="text-xl font-semibold text-gray-800">Pending Applications</h3>
-          <p className="text-3xl font-bold text-primary mt-2">{pendingApplications}</p>
+          <h3 className="text-xl font-semibold text-gray-800">New Applications Today</h3>
+          <p className="text-3xl font-bold text-primary mt-2">{newApplicationsToday}</p>
           <p className="text-sm text-gray-600 mt-2">Review corporate and volunteer applications.</p>
         </div>
+
+        {/* Donation History Card */}
+        <div
+          className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => navigate("/admin/admin-dashboard/donation-history")}
+        >
+          <h3 className="text-xl font-semibold text-gray-800">Donation History</h3>
+          <p className="text-3xl font-bold text-primary mt-2">{totalDonations}</p>
+          <p className="text-sm text-gray-600 mt-2">View all donations made to the organization.</p>
+        </div>
       </div>
+
+      {/* Modal for Viewing Messages */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Message</h3>
+            <p className="text-gray-600">{selectedMessage}</p>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closeModal}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
