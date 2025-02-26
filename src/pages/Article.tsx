@@ -12,6 +12,8 @@ const Article = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+    
     const fetchArticle = async () => {
       try {
         // Fetch the article by ID
