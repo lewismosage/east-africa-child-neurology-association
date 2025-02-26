@@ -18,6 +18,8 @@ const EventsPage = () => {
 
   // Fetch upcoming events from Supabase (excluding training events)
   useEffect(() => {
+    window.scrollTo(0, 0); 
+    
     const fetchEvents = async () => {
       const { data, error } = await supabase
         .from("events")

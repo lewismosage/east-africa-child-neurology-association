@@ -28,6 +28,8 @@ const Research = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
+    window.scrollTo(0, 0); 
+    
     const fetchArticles = async () => {
       // Fetch only approved projects
       const { data, error } = await supabase

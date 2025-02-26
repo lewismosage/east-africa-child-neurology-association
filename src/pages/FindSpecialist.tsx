@@ -28,6 +28,8 @@ const FindSpecialist = () => {
 
   // Fetch specialists from Supabase on component mount
   useEffect(() => {
+    window.scrollTo(0, 0); 
+    
     const fetchSpecialists = async () => {
       try {
         // Fetch only approved specialists
