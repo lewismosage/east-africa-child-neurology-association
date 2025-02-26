@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Hero from "./Hero";
+import { useMediaQuery } from "react-responsive";
 import agakhan from "../assets/agakhan.jpg";
 import cnf from "../assets/cnf.webp";
 import kpa from "../assets/kpa.jpg";
@@ -21,8 +22,10 @@ interface PartnersSectionProps {
 }
 
 const PartnersSection: React.FC<PartnersSectionProps> = ({ partners }) => {
-  // Duplicate the partners array multiple times to create a seamless loop
-  const duplicatedPartners = [...partners, ...partners, ...partners];
+  const isMobile = useMediaQuery({ maxWidth: 768 });
+  const cardWidth = isMobile ? 120 : 200;
+  const gap = isMobile ? 8 : 16;
+  const totalWidth = (cardWidth + gap) * partners.length;
 
   return (
     <div className="bg-gray-50 py-16 overflow-hidden mt-8 border-2 border-purple-500">
@@ -33,37 +36,42 @@ const PartnersSection: React.FC<PartnersSectionProps> = ({ partners }) => {
         <p className="text-xl max-w-2xl mx-auto mb-8 text-center text-black-600">
           Working together to advance child neurology in East Africa.
         </p>
-        <motion.div
-          className="flex"
-          animate={{
-            x: ["0%", "-100%"], // Move from 0% to -100% of the container width
-          }}
-          transition={{
-            duration: 20, // Reduced duration for faster animation
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        >
-          {duplicatedPartners.map((partner: Partner, index: number) => (
-            <motion.div
-              key={`${partner.id}-${index}`} // Use a unique key for each duplicated partner
-              className="flex-shrink-0 w-64 mx-4 p-6 bg-white rounded-lg shadow-md flex flex-col items-center justify-center cursor-pointer"
-              whileHover={{ scale: 1.05 }} // Add a hover effect
-              transition={{ duration: 0.2 }} // Hover transition duration
-            >
-              <img
-                src={partner.logo}
-                alt={partner.name}
-                className="w-24 h-24 mb-4 object-contain"
-              />
-              <p className="text-lg font-medium text-center">{partner.name}</p>
-            </motion.div>
-          ))}
-        </motion.div>
+        <div className="relative overflow-hidden w-full">
+          <motion.div
+            className="flex"
+            style={{ width: totalWidth * 2 }}
+            animate={{ x: ["0%", `-${totalWidth}px`], transitionEnd: { x: "0%" } }}
+            transition={{
+              duration: isMobile ? 8 : 12,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          >
+            {[...partners, ...partners].map((partner, index) => (
+              <motion.div
+                key={`${partner.id}-${index}`}
+                className="flex-shrink-0 p-2 bg-white rounded-lg shadow-md flex flex-col items-center justify-center cursor-pointer"
+                style={{ width: cardWidth, marginRight: gap }}
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                <img
+                  src={partner.logo}
+                  alt={partner.name}
+                  className="w-10 h-10 md:w-24 md:h-24 mb-2 object-contain"
+                />
+                <p className="text-xs md:text-lg font-medium text-center">
+                  {partner.name}
+                </p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </div>
   );
 };
+
 
 const HomePage = () => {
   const partners = [
