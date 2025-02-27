@@ -49,7 +49,7 @@ import { CorporatePartnership } from "./pages/CorporatePartnership";
 import { VolunteerSupport } from "./pages/VolunteerSupport";
 import CorporateAndVolunteer from "./pages/admin/CorporateAndVolunteer";
 import DonationHistory from "./pages/admin/DonationHistory";
-
+import ConfirmAccountPage from "./pages/ConfirmAccountPage";
 
 const App = () => {
   return (
@@ -93,6 +93,7 @@ const App = () => {
         <Route path="/article/:id" element={<Article />} />
         <Route path="/about-us/support-our-cause/corporate-partnership" element={<CorporatePartnership />} />
         <Route path="/about-us/support-our-cause/volunteer-support" element={<VolunteerSupport  />} />
+        <Route path="/confirm-account" element={<ConfirmAccountPage />} />
 
          {/* Admin Login Page */}
          <Route path="/admin/login" element={<AdminLogin />} />

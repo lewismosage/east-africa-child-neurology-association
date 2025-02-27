@@ -4,9 +4,9 @@ import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "../../../supabaseClient";
 
 export function RegisterForm() {
-   useEffect(() => {
-      window.scrollTo(0, 0);
-    }, []);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -118,7 +118,7 @@ export function RegisterForm() {
         },
       });
     }, 1000);
-  }; 
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -133,7 +133,16 @@ export function RegisterForm() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {status && <p className="text-center text-red-600 mb-4">{status}</p>}
+          {/* Status Message */}
+          {status && typeof status === 'string' && (
+            <p
+              className={`text-center mb-4 ${
+                status.includes("successful") ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {status}
+            </p>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label
