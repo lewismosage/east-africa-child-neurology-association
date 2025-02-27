@@ -7,7 +7,7 @@ interface Query {
   topic: string;
   name?: string; // Optional for healthcare_queries
   email: string;
-  message?: string; // Optional for healthcare_queries
+  message?: string; // Optional for contact_us_queries
   question?: string; // Optional for contact_us_queries
   created_at: string;
   status: string;
