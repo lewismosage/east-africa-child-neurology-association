@@ -1,4 +1,3 @@
-// src/memberportal/teleconsultation/RequestDetails.tsx
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "../../../../supabaseClient";
@@ -12,9 +11,16 @@ interface ConsultationRequest {
   created_by: string;
 }
 
+interface Member {
+  id: string;
+  full_name: string;
+  email: string;
+}
+
 const RequestDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [request, setRequest] = useState<ConsultationRequest | null>(null);
+  const [member, setMember] = useState<Member | null>(null); // Store member details
   const [loading, setLoading] = useState<boolean>(true);
 
   // Fetch consultation request details
@@ -31,6 +37,18 @@ const RequestDetails: React.FC = () => {
 
         if (error) throw error;
         setRequest(data);
+
+        // Fetch member details using the `created_by` field
+        if (data?.created_by) {
+          const { data: memberData, error: memberError } = await supabase
+            .from("members")
+            .select("id, full_name, email")
+            .eq("id", data.created_by)
+            .single();
+
+          if (memberError) throw memberError;
+          setMember(memberData);
+        }
       } catch (error) {
         console.error("Error fetching consultation request:", error);
       } finally {
@@ -51,7 +69,7 @@ const RequestDetails: React.FC = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Consultation Request</h1>
+      <h1 className="text-2xl font-bold mb-6 text-primary">Consultation Request</h1>
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-lg font-medium">Symptoms</h2>
         <p className="text-sm text-gray-600">{request.symptoms}</p>
@@ -65,6 +83,14 @@ const RequestDetails: React.FC = () => {
 
         <h2 className="text-lg font-medium mt-4">Notes</h2>
         <p className="text-sm text-gray-600">{request.notes}</p>
+
+        {/* Display member details */}
+        {member && (
+          <div className="mt-4">
+            <h2 className="text-lg font-medium">Shared By</h2>
+            <p className="text-sm text-gray-600">{member.full_name || member.email}</p>
+          </div>
+        )}
 
         <p className="text-sm text-gray-500 mt-4">
           Created on: {new Date(request.created_at).toLocaleDateString()}
