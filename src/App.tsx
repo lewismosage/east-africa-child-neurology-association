@@ -50,6 +50,12 @@ import { VolunteerSupport } from "./pages/VolunteerSupport";
 import CorporateAndVolunteer from "./pages/admin/CorporateAndVolunteer";
 import DonationHistory from "./pages/admin/DonationHistory";
 import ConfirmAccountPage from "./pages/ConfirmAccountPage";
+import ForumMain from "./pages/memberportal/forum/ForumMain";
+import Categories from "./pages/memberportal/forum/Categories";
+import Post from "./pages/memberportal/forum/Post";
+import NewPost from "./pages/memberportal/forum/NewPost";
+import TeleconsultationMain from "./pages/memberportal/teleconsultation/teleconsultation";
+import Request from "./pages/memberportal/teleconsultation/Request";
 
 const App = () => {
   return (
@@ -94,6 +100,12 @@ const App = () => {
         <Route path="/about-us/support-our-cause/corporate-partnership" element={<CorporatePartnership />} />
         <Route path="/about-us/support-our-cause/volunteer-support" element={<VolunteerSupport  />} />
         <Route path="/confirm-account" element={<ConfirmAccountPage />} />
+        <Route path="/memberportal/forum" element={<ForumMain />} />
+        <Route path="/memberportal/forum/categories" element={<Categories />} />
+        <Route path="/memberportal/forum/post/:id" element={<Post />} />
+        <Route path="/memberportal/forum/new-post" element={<NewPost />} />
+        <Route path="/memberportal/teleconsultation" element={<TeleconsultationMain />} />
+        <Route path="/memberportal/teleconsultation/request/:id" element={<Request />} />
 
          {/* Admin Login Page */}
          <Route path="/admin/login" element={<AdminLogin />} />
