@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { supabase } from "../../../../supabaseClient";
 
 interface CaseStudy {
-  id: number;
+  id: string; // Updated to string (UUID)
   title: string;
   description: string;
   symptoms?: string;
@@ -13,8 +13,8 @@ interface CaseStudy {
 }
 
 interface Comment {
-  id: number;
-  case_study_id: number;
+  id: string; // Updated to string (UUID)
+  case_study_id: string; // Updated to string (UUID)
   comment: string;
   created_by: string;
   created_by_name: string; // Added this field
@@ -58,10 +58,12 @@ const CaseStudyDetails: React.FC = () => {
       const { data, error } = await supabase
         .from("comments")
         .select("*")
-        .eq("case_study_id", id)
-        .order("created_at", { ascending: true }); // Sort comments by creation date
+        .eq("case_study_id", id) // Use the UUID directly (no parsing)
+        .order("created_at", { ascending: true });
 
       if (error) throw error;
+
+      console.log("Fetched comments:", data); // Debugging: Log fetched comments
       setComments(data || []);
     } catch (error) {
       console.error("Error fetching comments:", error);
@@ -70,6 +72,7 @@ const CaseStudyDetails: React.FC = () => {
     }
   };
 
+  // Fetch comments when the component mounts or the id changes
   useEffect(() => {
     fetchComments();
   }, [id]);
@@ -101,7 +104,7 @@ const CaseStudyDetails: React.FC = () => {
         .from("comments")
         .insert([
           {
-            case_study_id: parseInt(id),
+            case_study_id: id, // Use the UUID directly (no parsing)
             comment: newComment,
             created_by: userData.user.id,
             created_by_name: displayName, // Use full name or email
@@ -132,8 +135,14 @@ const CaseStudyDetails: React.FC = () => {
       .channel("comments")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "comments", filter: `case_study_id=eq.${id}` },
+        { 
+          event: "INSERT", 
+          schema: "public", 
+          table: "comments", 
+          filter: `case_study_id=eq.${id}` // Use the UUID directly
+        },
         (payload) => {
+          console.log("New comment received:", payload.new); // Debugging: Log new comment
           setComments((prevComments) => [...prevComments, payload.new as Comment]);
         }
       )

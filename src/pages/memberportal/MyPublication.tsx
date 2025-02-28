@@ -60,6 +60,8 @@ const MyPublications = () => {
   });
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+    
     const fetchUser = async () => {
       const { data: userData, error } = await supabase.auth.getUser();
       if (error) {

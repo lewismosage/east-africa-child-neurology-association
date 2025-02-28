@@ -69,7 +69,7 @@ const NewPost = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Submit a New Case Study</h1>
+      <h1 className="text-2xl font-bold mb-6 text-primary">Submit a New Case Study</h1>
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow">
         <div className="space-y-4">
           {/* Title */}
