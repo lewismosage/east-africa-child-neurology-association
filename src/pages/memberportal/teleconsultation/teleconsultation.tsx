@@ -32,7 +32,7 @@ const TeleconsultationMain = () => {
           className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow transition hover:shadow-md w-64"
         >
           <FaPaperPlane className="text-blue-600 text-2xl" />
-          <span className="text-gray-900 font-medium">Send a New Request</span>
+          <span className="text-gray-900 font-medium">Send a New Consultation Request</span>
         </Link>
 
         {/* Find a Specialist */}
