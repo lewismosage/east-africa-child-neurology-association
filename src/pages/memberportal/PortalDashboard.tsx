@@ -7,8 +7,8 @@ import { useNavigate } from "react-router-dom";
 
 const menuItems = [
   { icon: UserCircle, label: "Account Management", href: "/memberportal/account-management" },
-  { icon: GiBrain , label: "Case Study & Medical Discussion Forum", href: "/portal/forum" },
-  { icon: FaUserMd , label: "Teleconsultation & Referral Network", href: "/portal/teleconsultation" },
+  { icon: GiBrain , label: "Case Study & Medical Discussion Forum", href: "/memberportal/forum" },
+  { icon: FaUserMd , label: "Teleconsultation & Referral Network", href: "/memberportal/teleconsultation" },
 ];
 
 const quickAccessLinks = [
