@@ -107,26 +107,17 @@ const PaymentProcessing = () => {
             </p>
           )}
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <p className="text-sm font-medium text-gray-700 text-center">
-                ACCOUNT DETAILS
+            {/* MPESA PAYBILL and ACCOUNT NUMBER Section */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600">
+                <strong>MPESA PAYBILL:</strong> 12345
               </p>
-              <label
-                htmlFor="paybill"
-                className="block text-sm font-medium text-gray-700"
-              >
-                M-Pesa Paybill
-              </label>
-              <textarea
-                id="paybill"
-                name="paybill"
-                value={"PAYBILL-12345\nACCOUNT NUMBER 12345"}
-                readOnly
-                rows={2}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
+              <p className="text-sm text-gray-600">
+                <strong>ACCOUNT NUMBER:</strong> 12345
+              </p>
             </div>
 
+            {/* Full Name */}
             <div>
               <label
                 htmlFor="fullName"
@@ -145,6 +136,7 @@ const PaymentProcessing = () => {
               />
             </div>
 
+            {/* Phone Number */}
             <div>
               <label
                 htmlFor="phone"
@@ -163,7 +155,7 @@ const PaymentProcessing = () => {
               />
             </div>
 
-            {/* Display the selected membership tier as read-only text */}
+            {/* Membership Tier */}
             <div>
               <label
                 htmlFor="membershipTier"
@@ -176,6 +168,7 @@ const PaymentProcessing = () => {
               </div>
             </div>
 
+            {/* Transaction ID */}
             <div>
               <label
                 htmlFor="transactionId"
@@ -194,6 +187,7 @@ const PaymentProcessing = () => {
               />
             </div>
 
+            {/* Submit Button */}
             <div>
               <button
                 type="submit"

@@ -299,6 +299,16 @@ const PaymentProcessing = () => {
               />
             </div>
 
+            {/* MPESA PAYBILL and ACCOUNT NUMBER */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600">
+                <strong>MPESA PAYBILL:</strong> 12345
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>ACCOUNT NUMBER:</strong> 12345
+              </p>
+            </div>
+
             {/* Submit Button */}
             <div>
               <button
