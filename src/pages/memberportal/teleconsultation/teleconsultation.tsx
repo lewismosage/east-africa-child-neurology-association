@@ -37,7 +37,7 @@ const TeleconsultationMain = () => {
 
         {/* Find a Specialist */}
         <Link
-          to="/memberportal/teleconsultation/find-specialist"
+          to="/find-specialist"
           className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow transition hover:shadow-md w-64"
         >
           <FaUserMd className="text-blue-600 text-2xl" />

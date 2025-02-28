@@ -4,9 +4,13 @@ import { Link } from "react-router-dom";
 const ForumMain = () => {
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-center mb-6 text-primary">
+      <h1 className="text-2xl text-center font-bold mb-2 text-primary">
         Case Study & Medical Discussion Forum
       </h1>
+
+      <p className="text-center text-gray-600 mb-6 max-w-2xl mx-auto">
+        Engage in in-depth case discussions, share medical insights, and collaborate with experts to enhance patient care and medical knowledge.
+      </p>
 
       {/* Forum Categories Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

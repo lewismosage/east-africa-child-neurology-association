@@ -58,6 +58,9 @@ import TeleconsultationMain from "./pages/memberportal/teleconsultation/telecons
 import Request from "./pages/memberportal/teleconsultation/Request";
 import CategoryPage from "./pages/memberportal/forum/CategoryPage";
 import CaseStudyDetails from "./pages/memberportal/forum/CaseStudyDetails";
+import RequestsList from "./pages/memberportal/teleconsultation/RequestsList";
+import RequestDetails from "./pages/memberportal/teleconsultation/RequestDetails";
+import NewRequest from "./pages/memberportal/teleconsultation/NewRequest";
 
 const App = () => {
   return (
@@ -110,6 +113,9 @@ const App = () => {
         <Route path="/memberportal/teleconsultation/request/:id" element={<Request />} />
         <Route path="/memberportal/forum/categories/:category" element={<CategoryPage />} />
         <Route path="/memberportal/forum/case-study/:id" element={<CaseStudyDetails />} />
+        <Route path="/memberportal/teleconsultation/requests" element={<RequestsList />} />
+        <Route path="/memberportal/teleconsultation/request/:id" element={<RequestDetails />} />
+        <Route path="/memberportal/teleconsultation/new-request" element={<NewRequest />} />
 
          {/* Admin Login Page */}
          <Route path="/admin/login" element={<AdminLogin />} />

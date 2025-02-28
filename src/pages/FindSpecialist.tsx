@@ -161,7 +161,7 @@ const FindSpecialist = () => {
         <div className="mt-6">
           <button
             onClick={handleSearchSpecialists}
-            className="bg-purple-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-purple-700 transition duration-200"
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-400"
           >
             Search Specialists
           </button>
@@ -223,7 +223,7 @@ const FindSpecialist = () => {
         </p>
         <button
           onClick={handleApplyForListing}
-          className="bg-purple-500 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-purple-600 transition duration-200"
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-400"
         >
           Apply for Listing
         </button>
