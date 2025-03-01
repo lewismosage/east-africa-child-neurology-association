@@ -54,13 +54,10 @@ import ForumMain from "./pages/memberportal/forum/ForumMain";
 import Categories from "./pages/memberportal/forum/Categories";
 import Post from "./pages/memberportal/forum/Post";
 import NewPost from "./pages/memberportal/forum/NewPost";
-import TeleconsultationMain from "./pages/memberportal/teleconsultation/teleconsultation";
-import Request from "./pages/memberportal/teleconsultation/Request";
+
 import CategoryPage from "./pages/memberportal/forum/CategoryPage";
 import CaseStudyDetails from "./pages/memberportal/forum/CaseStudyDetails";
-import RequestsList from "./pages/memberportal/teleconsultation/RequestsList";
-import RequestDetails from "./pages/memberportal/teleconsultation/RequestDetails";
-import NewRequest from "./pages/memberportal/teleconsultation/NewRequest";
+
 
 const App = () => {
   return (
@@ -109,13 +106,8 @@ const App = () => {
         <Route path="/memberportal/forum/categories" element={<Categories />} />
         <Route path="/memberportal/forum/post/:id" element={<Post />} />
         <Route path="/memberportal/forum/new-post/:category" element={<NewPost />} />
-        <Route path="/memberportal/teleconsultation" element={<TeleconsultationMain />} />
-        <Route path="/memberportal/teleconsultation/request/:id" element={<Request />} />
         <Route path="/memberportal/forum/categories/:category" element={<CategoryPage />} />
         <Route path="/memberportal/forum/case-study/:id" element={<CaseStudyDetails />} />
-        <Route path="/memberportal/teleconsultation/requests" element={<RequestsList />} />
-        <Route path="/memberportal/teleconsultation/request/:id" element={<RequestDetails />} />
-        <Route path="/memberportal/teleconsultation/new-request" element={<NewRequest />} />
 
          {/* Admin Login Page */}
          <Route path="/admin/login" element={<AdminLogin />} />
