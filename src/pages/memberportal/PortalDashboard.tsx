@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Award, UserCircle,} from "lucide-react";
 import { GiBrain } from "react-icons/gi"; 
-import { FaVideo } from "react-icons/fa";
 import { supabase } from "../../../supabaseClient";
 import { useNavigate } from "react-router-dom";
 
 const menuItems = [
   { icon: UserCircle, label: "Account Management", href: "/memberportal/account-management" },
-  { icon: FaVideo , label: "Real-time Video Consultations", href: "/memberportal/video-consultations" },
   { icon: GiBrain , label: "Case Study & Medical Discussion Forum", href: "/memberportal/forum" }, 
 ];
 
