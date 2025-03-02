@@ -54,9 +54,10 @@ import ForumMain from "./pages/memberportal/forum/ForumMain";
 import Categories from "./pages/memberportal/forum/Categories";
 import Post from "./pages/memberportal/forum/Post";
 import NewPost from "./pages/memberportal/forum/NewPost";
-
 import CategoryPage from "./pages/memberportal/forum/CategoryPage";
 import CaseStudyDetails from "./pages/memberportal/forum/CaseStudyDetails";
+import { ForgotPassword } from "./pages/memberportal/ForgotPassword";
+import { ResetPassword } from "./pages/memberportal/ResetPassword";
 
 
 const App = () => {
@@ -108,6 +109,8 @@ const App = () => {
         <Route path="/memberportal/forum/new-post/:category" element={<NewPost />} />
         <Route path="/memberportal/forum/categories/:category" element={<CategoryPage />} />
         <Route path="/memberportal/forum/case-study/:id" element={<CaseStudyDetails />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
          {/* Admin Login Page */}
          <Route path="/admin/login" element={<AdminLogin />} />
