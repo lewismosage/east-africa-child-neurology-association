@@ -1,16 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "../../../supabaseClient.ts";
 import { Lock } from "lucide-react";
 
 export function ResetPassword() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
+  const [searchParams] = useSearchParams();
+  const accessToken = searchParams.get("access_token"); // Extract token from URL
+
+  useEffect(() => {
+    // Set the session using the access token
+    const setSession = async () => {
+      if (accessToken) {
+        const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: "" });
+        if (error) {
+          setStatus(`Error: ${error.message}`);
+        }
+      }
+    };
+
+    setSession();
+  }, [accessToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const { error } = await supabase.auth.updateUser({ password });
+      // Update the user's password
+      const { error } = await supabase.auth.updateUser({
+        password,
+      });
 
       if (error) {
         setStatus(`Error: ${error.message}`);
