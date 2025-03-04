@@ -39,7 +39,9 @@ export function ForgotPassword() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {status && (
-            <p className="text-center text-red-600 mb-4">{status}</p>
+            <p className={`text-center ${status.includes("Error") ? "text-red-600" : "text-green-600"} mb-4`}>
+              {status}
+            </p>
           )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
