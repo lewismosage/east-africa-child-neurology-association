@@ -10,7 +10,9 @@ export function ForgotPassword() {
     e.preventDefault();
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: "https://east-africa-child-neurology-association.vercel.app/reset-password",
+      });
 
       if (error) {
         setStatus(`Error: ${error.message}`);
